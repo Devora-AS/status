@@ -14,19 +14,19 @@
 # * More by Anand Chowdhary: https://anandchowdhary.com
 
 
-name: Response Time CI
+name: Update Template CI
 on:
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "0 0 * * *"
   repository_dispatch:
-    types: [response_time]
+    types: [update_template]
   workflow_dispatch:
 concurrency:
   group: ${{ github.repository }}-${{ github.head_ref || github.ref_name }}-upptime
   cancel-in-progress: false
 jobs:
   release:
-    name: Check status
+    name: Build
     runs-on: ubuntu-latest
     env:
       GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
@@ -47,11 +47,9 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ steps.app_token.outputs.token || secrets.GH_PAT || github.token }}
-      - name: Update response time
-        uses: upptime/uptime-monitor@v1.44.1
+      - name: Update template
+        uses: upptime/uptime-monitor@master
         with:
-          command: "response-time"
+          command: "update-template"
         env:
           GH_PAT: ${{ steps.app_token.outputs.token || secrets.GH_PAT || github.token }}
-          # Configure the secret allowlist in .upptimerc.yml; do not edit this workflow directly.
-          SECRETS_CONTEXT: '{"SLACK_WEBHOOK_URL":${{ toJson(secrets.SLACK_WEBHOOK_URL) }},"NOTIFICATION_SLACK":${{ toJson(secrets.NOTIFICATION_SLACK) }},"NOTIFICATION_SLACK_WEBHOOK_URL":${{ toJson(secrets.NOTIFICATION_SLACK_WEBHOOK_URL) }}}'
