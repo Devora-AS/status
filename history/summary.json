@@ -1,0 +1,38 @@
+[
+  {
+    "name": "AgePass (produksjon)",
+    "url": "https://agepass.devora.no/health",
+    "icon": "https://icons.duckduckgo.com/ip3/agepass.devora.no.ico",
+    "slug": "age-pass-produksjon",
+    "status": "up",
+    "uptime": "100.00%",
+    "uptimeDay": "100.00%",
+    "uptimeWeek": "100.00%",
+    "uptimeMonth": "100.00%",
+    "uptimeYear": "100.00%",
+    "time": 1694,
+    "timeDay": 1694,
+    "timeWeek": 1694,
+    "timeMonth": 1694,
+    "timeYear": 1694,
+    "dailyMinutesDown": {}
+  },
+  {
+    "name": "Vipps Login (upstream — ikke AgePass)",
+    "url": "https://status.vippsmobilepay.com/api/v2/summary.json",
+    "icon": "https://icons.duckduckgo.com/ip3/status.vippsmobilepay.com.ico",
+    "slug": "vipps-login-upstream-ikke-age-pass",
+    "status": "up",
+    "uptime": "100.00%",
+    "uptimeDay": "100.00%",
+    "uptimeWeek": "100.00%",
+    "uptimeMonth": "100.00%",
+    "uptimeYear": "100.00%",
+    "time": 236,
+    "timeDay": 236,
+    "timeWeek": 236,
+    "timeMonth": 236,
+    "timeYear": 236,
+    "dailyMinutesDown": {}
+  }
+]
