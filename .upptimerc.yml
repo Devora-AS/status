@@ -1,0 +1,40 @@
+# Devora selskapsstatus — https://status.devora.no
+# Workflows genereres/oppdateres av Upptime Setup CI (ikke rediger workflow-filer manuelt).
+
+owner: Devora-AS
+repo: status
+
+secrets:
+  - SLACK_WEBHOOK_URL
+  - NOTIFICATION_SLACK
+  - NOTIFICATION_SLACK_WEBHOOK_URL
+
+sites:
+  - name: AgePass (produksjon)
+    url: https://agepass.devora.no/health
+    expectedStatusCodes:
+      - 200
+  - name: Vipps Login (upstream — ikke AgePass)
+    url: https://status.vippsmobilepay.com/api/v2/summary.json
+    expectedStatusCodes:
+      - 200
+
+status-website:
+  cname: status.devora.no
+  name: Devora status
+  introTitle: "**Devora** — offentlig driftsstatus for selskapets tjenester."
+  introMessage: |
+    Denne siden viser tilgjengelighet for AgePass og relaterte avhengigheter.
+    Data kommer fra automatiske sjekker i [GitHub-repoet](https://github.com/Devora-AS/status).
+    Vipps-raden viser **tredjeparts** status — rød Vipps betyr ikke automatisk at AgePass er nede.
+  navbar:
+    - title: Status
+      href: /
+    - title: devora.no
+      href: https://devora.no
+    - title: GitHub
+      href: https://github.com/Devora-AS/status
+
+# Varsling: Slack via GitHub Actions Secrets (ingen URL i git).
+# Sett NOTIFICATION_SLACK=true og NOTIFICATION_SLACK_WEBHOOK_URL til webhook-URL.
+# Devora runbook bruker navnet SLACK_WEBHOOK_URL for samme hemmelighet — se docs/runbook-status.md.

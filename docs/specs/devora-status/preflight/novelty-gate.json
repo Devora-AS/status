@@ -1,0 +1,28 @@
+{
+  "slug": "devora-status",
+  "gate": "integrate_and_extend",
+  "generated_at": "2026-09-28T08:57:00Z",
+  "closed_scope_denied": false,
+  "closed_scope_denied_reason": null,
+  "technical_mechanism_present": true,
+  "mechanism_description": "Independent public status plane with synthetic /health monitors, multi-product components, Slack, and third-party dependency visibility — using known OSS/status patterns, not a novel algorithm.",
+  "rework_cost_threshold_met": false,
+  "rework_cost_estimate": "Wrong OSS pick costs days–weeks of ops/rehost, not multi-month R&D; preflight budget for arXiv literature not justified.",
+  "cache_hit": false,
+  "cache_slug": null,
+  "cache_checked_at": "2026-09-28T08:57:00Z",
+  "g2_approved": false,
+  "g2_approved_at": null,
+  "phase_b_status": "not_run",
+  "phase_b_reason": "gate != novel_research_required; operator instructed Phase B DO NOT run — gate only",
+  "rationale": "Credible free/OSS comparables (Upptime, Uptime Kuma, Statusnook, OpenStatus, Gatus) cover monitors, Slack, multi-endpoint status, and independent hosting. Operator forbids paid Statuspage. Work is integration/extension (DNS, component taxonomy, hosting isolation, AgePass /health as probe), not greenfield research.",
+  "open_decisions": [
+    "Primary stack: Uptime Kuma (VPS, default) vs Upptime (GitHub) vs Statusnook (e-mail subscribers)",
+    "Where to host if not GitHub Pages (must not share AgePass Function App / RG)",
+    "Auto-red components on monitor fail vs human confirm before public Major",
+    "Third-party deps (Vipps, Quickbutik, Azure platform) as components vs incident text only",
+    "TEST environment visibility on public status.devora.no",
+    "Legacy status.agepass.* redirect vs deep-link notice"
+  ],
+  "deferred_checklist_items": []
+}

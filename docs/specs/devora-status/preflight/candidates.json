@@ -1,0 +1,172 @@
+{
+  "slug": "devora-status",
+  "generated_at": "2026-09-28T08:57:00Z",
+  "constraint": "free/OSS preferred; no paid Atlassian Statuspage; status.devora.no must survive AgePass Azure outage",
+  "candidates": [
+    {
+      "name": "Upptime",
+      "source": "https://github.com/upptime/upptime",
+      "relevance": "direct",
+      "license": "MIT",
+      "cost_model": "free (GitHub Actions + Pages)",
+      "transfers": [
+        "Independent of AgePass Azure",
+        "Automated HTTP health checks",
+        "Slack notifications",
+        "Public status page + custom domain via Pages/CNAME",
+        "Multi-endpoint YAML config for multi-product"
+      ],
+      "do_not_copy": [
+        "GitHub as sole SPOF without documented fallback",
+        "Issue-only incident UX if non-engineer IC needs polish",
+        "Assuming e-mail subscriber parity with Statuspage"
+      ],
+      "notes": "Strongest free independence story. Min check interval typically 5m. Observed README 2026-09-28."
+    },
+    {
+      "name": "Uptime Kuma",
+      "source": "https://github.com/louislam/uptime-kuma",
+      "relevance": "direct",
+      "license": "MIT",
+      "cost_model": "free software; ~$5–12/mo VPS outside product Azure",
+      "transfers": [
+        "HTTP/JSON body checks against /health",
+        "Slack + many notification channels",
+        "Built-in public status page",
+        "Maintenance windows and monitor groups for multi-product",
+        "Active maintenance (2026)"
+      ],
+      "do_not_copy": [
+        "Hosting on same Function App / RG as AgePass",
+        "Expecting first-class customer e-mail subscribers without extra tooling",
+        "Single-region probe as global truth without caveat"
+      ],
+      "notes": "Best ops UI among free self-host options. Status page is good-enough, not Statuspage-clone polish."
+    },
+    {
+      "name": "Statusnook",
+      "source": "https://statusnook.com",
+      "relevance": "adjacent",
+      "license": "MIT",
+      "cost_model": "free software; VPS hosting",
+      "transfers": [
+        "Monitors + incidents + maintenance",
+        "E-mail subscribers",
+        "Docker / install script / auto HTTPS",
+        "Custom domain"
+      ],
+      "do_not_copy": [
+        "Assuming large community / long bus-factor safety",
+        "Deploying inside AgePass Azure"
+      ],
+      "notes": "Use when e-mail subscribers are MVP-critical and Upptime/Kuma fall short."
+    },
+    {
+      "name": "OpenStatus",
+      "source": "https://www.openstatus.dev/",
+      "relevance": "adjacent",
+      "license": "AGPL-3.0 (self-host) + managed SaaS",
+      "cost_model": "free tier thin; paid cloud from ~$30/mo; self-host = infra + AGPL",
+      "transfers": [
+        "Monitor-driven status updates",
+        "Subscribers + Slack",
+        "API/Terraform",
+        "Multi-region managed probes"
+      ],
+      "do_not_copy": [
+        "Assuming free SaaS covers multi-product custom domain without verifying current free limits",
+        "Ignoring AGPL implications for self-host"
+      ],
+      "notes": "Bridge if OSS self-host fails and Statuspage remains forbidden. Confirm free plan limits live before planning."
+    },
+    {
+      "name": "Gatus",
+      "source": "https://github.com/TwiN/gatus",
+      "relevance": "lighter",
+      "license": "Apache-2.0",
+      "cost_model": "free; self-host",
+      "transfers": [
+        "JSONPath health evaluation",
+        "Slack alerts",
+        "Config-as-code"
+      ],
+      "do_not_copy": [
+        "Using Gatus alone as customer-facing incident portal without a status front"
+      ],
+      "notes": "Excellent probe engine behind Upptime/Kuma/static front if needed."
+    },
+    {
+      "name": "cState",
+      "source": "https://github.com/cstate/cstate",
+      "relevance": "lighter",
+      "license": "MIT",
+      "cost_model": "free static hosting/CDN",
+      "transfers": [
+        "CDN-hosted status with extreme independence",
+        "Manual/git maintenance posts"
+      ],
+      "do_not_copy": [
+        "Expecting automated /health without a separate monitor"
+      ],
+      "notes": "Only with an external checker feeding commits/PRs."
+    },
+    {
+      "name": "Instatus (free Starter / paid Pro)",
+      "source": "https://instatus.com/pricing.md",
+      "relevance": "heavier",
+      "license": "proprietary SaaS",
+      "cost_model": "Starter $0 no custom domain; Pro ~$20/mo for domain",
+      "transfers": [
+        "Built-in monitors + Slack + public page",
+        "Independence from AgePass Azure"
+      ],
+      "do_not_copy": [
+        "Treating free tier as sufficient for status.devora.no (no custom domain)",
+        "Using as default while free/OSS path is viable"
+      ],
+      "notes": "Escape hatch only. Observed pricing.md 2026-09-28. Not Statuspage."
+    },
+    {
+      "name": "Atlassian Statuspage",
+      "source": "https://www.atlassian.com/software/statuspage/pricing",
+      "relevance": "heavier",
+      "license": "proprietary SaaS",
+      "cost_model": "paid for custom domain (Hobby+)",
+      "transfers": [],
+      "do_not_copy": [
+        "Entire product — operator constraint: no paid Statuspage"
+      ],
+      "notes": "EXCLUDED. Free tier lacks custom domain. Industry UX reference only (e.g. status.cursor.com)."
+    },
+    {
+      "name": "AgePass product status (status.agepass*.devora.no)",
+      "source": "docs/operations/status-page-dns.md",
+      "relevance": "template",
+      "license": "internal",
+      "cost_model": "coupled to Function App",
+      "transfers": [
+        "GET /health JSON as monitor target",
+        "Quic.cloud CNAME + asuid TXT patterns"
+      ],
+      "do_not_copy": [
+        "Hosting company status on the same Function App",
+        "Treating product HTML status as status.devora.no"
+      ],
+      "notes": "Anti-pattern for company plane; keep as deep-link or redirect later."
+    },
+    {
+      "name": "Cachet v3",
+      "source": "https://docs.cachethq.io/v3.x/introduction",
+      "relevance": "adjacent",
+      "license": "custom / source-available (v3); not clean MVP OSS bet",
+      "cost_model": "self-host infra",
+      "transfers": [
+        "Classic statuspage UX patterns"
+      ],
+      "do_not_copy": [
+        "Adopting v3 before production-ready claim"
+      ],
+      "notes": "Defer. Prefer Upptime/Kuma/Statusnook."
+    }
+  ]
+}

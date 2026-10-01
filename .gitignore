@@ -1,0 +1,28 @@
+# Upptime / status site (generert av Actions)
+site/
+.graphs/
+api/
+
+# Node (Setup CI / lokale verktøy)
+node_modules/
+.npm/
+.yarn/
+
+# Hemmeligheter og lokalt miljø
+.env
+.env.*
+!.env.example
+.mat.env
+.mat.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs og MAT-artefakter (ikke nødvendig i status-repo, men trygt)
+logs/
+artifacts/
