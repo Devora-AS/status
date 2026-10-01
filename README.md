@@ -8,10 +8,10 @@ Konfigurasjon i [`.upptimerc.yml`](./.upptimerc.yml). Detaljert URL-liste: [`doc
 
 ## Drift
 
-| Dokument | Innhold |
-|----------|---------|
+| Dokument                                             | Innhold                                                                            |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [`docs/runbook-status.md`](./docs/runbook-status.md) | Pages, private repo, secrets, DNS (Quic.cloud), hendelser, Slack, Actions-minutter |
-| [`ops/n8n/README.md`](./ops/n8n/README.md) | n8n som **supplement** (beriket Slack) — ikke offentlig status-UI |
+| [`ops/n8n/README.md`](./ops/n8n/README.md)           | n8n som **supplement** (beriket Slack) — ikke offentlig status-UI                  |
 
 ## Lokal validering
 
