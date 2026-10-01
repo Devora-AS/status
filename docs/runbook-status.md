@@ -112,6 +112,8 @@ Når `status.devora.no` er stabil:
 | Setup CI: `ENOENT ... scandir 'api'|'graphs'|'history'` | **Ikke fatal** før første vellykkede setup; mapper opprettes ved push. Valgfritt: tomme mapper med `.gitkeep` i repo. |
 | `There isn't a GitHub Pages site here` på custom domain | Pages-kilde er sannsynlig **GitHub Actions** — bytt til **branch `gh-pages`** (root). DNS kan være grønn uten at workflow-deploy finnes. |
 | Pages tom / 404 | Har Setup/Static Site CI deployet til **`gh-pages`**? Sjekk branch i repo. |
+| Upptime Issue 422 `Label`/`name`/`invalid` | Site-navn genererer label-slug **> 50 tegn**. Forkort `name` i `.upptimerc.yml` (slug ≤50). Bevist under S2 drill med for langt SIMULERT-navn.
+| S2 alert drill (Issue+Slack) | Prosedyre: `docs/operations/s2-alert-drill-plan.md`. Evidens **PROVEN**: `docs/operations/s2-alert-drill-evidence.md` (Issue #2 + Slack `#alerts`).
 | «Denne filen er **utfaset**…» / 739-byte `index.html` | GitHub Pages har bygget fra **`main`** (rot-`index.html` skal **ikke** finnes på `main`). Bekreft Pages-kilde = **`gh-pages`** (root). Kjør **Static Site CI** på `main`, vent til **pages build and deployment** (`gh-pages`) er **built**, hard refresh. Sjekk: `curl -sL https://status.devora.no/ \| wc -c` ≈ **7500** (Upptime), ikke **739**. |
 | Hvilken branch for manuelle workflows? | **Uptime CI**, **Graphs CI**, **Static Site CI** osv. kjøres på **`main`** — de deployer ikke feil branch; kun **Static Site CI** / **Setup CI** oppdaterer `gh-pages`. |
 | Workflows feiler på push | `GH_PAT` scope (`repo` + **`workflow`**); branch protection; SSO authorize |

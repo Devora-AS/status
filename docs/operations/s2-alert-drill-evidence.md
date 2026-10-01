@@ -1,112 +1,50 @@
-# S2 evidence — controlled alert drill (Issue + Slack)
+# S2 evidence — controlled alert drill
 
 **Slice:** `S2-alert-drill`  
-**Repo:** `Devora-AS/status`  
-**Collected (UTC):** `2026-10-01T10:23:00Z`  
-**Collector:** local builder session (no remote mutate)
-
----
-
-## Push / remote mutate gate
-
-| Field | Value |
-|-------|--------|
-| Explicit push GO in builder prompt / chat | **No** |
-| Remote `.upptimerc.yml` mutate | **Not executed** |
-| Uptime CI dispatch for drill | **Not executed** |
-| Stop reason for remote steps | **`approval_needed`** |
-
-Production monitors were left unchanged. Drill site exists only as a documented example in [`s2-alert-drill-plan.md`](./s2-alert-drill-plan.md).
-
----
-
-## Test design (prepared locally)
-
-| Field | Value |
-|-------|--------|
-| Monitor name | `DRILL SIMULERT — Devora status varslingstest (ikke produkt)` |
-| Test URL (preferred) | `https://httpbingo.org/status/503` |
-| Reachability (UTC) | `2026-10-01T10:22:09Z` — `curl -sI` → **HTTP 503** (ok) |
-| Alternates also 503 | `https://httpbin.org/status/503`, `https://postman-echo.com/status/503` |
-| Rejected candidate | `https://httpstat.us/503` — unreachable in this session (`curl` code `000`) |
-| expectedStatusCodes | `[200]` (503 → down) |
-| AgePass / Vipps | **Unchanged** in `.upptimerc.yml` |
+**Updated (UTC):** `2026-10-01T11:45:00Z`  
+**Repo:** `Devora-AS/status`
 
 ---
 
 ## Channel verdicts
 
-### GitHub Issue
-
-**Issue: NOT PROVEN**
-
-- No temporary drill monitor was pushed to `origin/main`.
-- No Uptime CI run was triggered for this drill.
-- No drill Issue number/URL collected.
-- Stop reason: **`approval_needed`** (push GO required before remote mutate).
-
-### Slack
-
-**Slack: NOT PROVEN**
-
-- Slack was **not** observed for this drill (no down event generated on production path).
-- Do **not** infer Slack from Issue (Issue also not proven).
-- Webhook URL / secret values: **not printed**.
-- When live drill runs after GO: record channel name + UTC receive time only.
+| Channel | Verdict | Evidence |
+|---------|---------|----------|
+| GitHub Issue | **PROVEN** | Issue [#2](https://github.com/Devora-AS/status/issues/2) — `🛑 DRILL SIMULERT status-test is down` (opened ~`2026-10-01T11:40:24Z`, closed after rollback) |
+| Slack | **PROVEN** | `#alerts` bot message ~`2026-10-01T11:40:25Z` (CEST 13:40:25): red square + DRILL SIMULERT status-test down + link to Issue #2 |
+| Rollback | **PROVEN** | Commit `cc4f93e` removed drill site; remote `.upptimerc.yml` = AgePass + Vipps only |
 
 ---
 
-## Production config hygiene (post-deferred remote)
+## What worked / what failed
 
-| Check | Result |
-|-------|--------|
-| Drill/SIMULERT site in `.upptimerc.yml` | **Absent** (correct for deferred remote) |
-| AgePass URL | `https://agepass.devora.no/health` — present, unchanged |
-| Vipps URL | `https://status.vippsmobilepay.com/api/v2/summary.json` — present, unchanged |
-| Secrets in evidence | None (names only: `NOTIFICATION_SLACK`, `NOTIFICATION_SLACK_WEBHOOK_URL`, `SLACK_WEBHOOK_URL`) |
+1. **First attempts failed** because Upptime Issue create returned **HTTP 422**: label name `drill-simulert-devora-status-varslingstest-ikke-produkt` **invalid** (GitHub labels max **50** characters). Status still flipped to `down` in history, but **no Issue** and thus weak Slack coupling until fixed.
+2. **Fix:** shortened monitor name to `DRILL SIMULERT status-test` (slug `drill-simulert-status-test`, length OK).
+3. After rename, Issue #2 + Slack `#alerts` fired on down.
+4. Temporary monitor removed; Issue #2 closed with SIMULERT comment.
 
----
+### Useful run IDs
 
-## Rollback status
+| Run | Role |
+|-----|------|
+| `36856594370` | Uptime CI — up→down with long name; log shows 422 label error |
+| Setup after short-name push | Created Issue #2 |
+| `36857104069` / `36857242268` | Setup + Uptime after rollback |
 
-| Step | Status |
-|------|--------|
-| Remove drill monitor from remote | **N/A** — never added remotely |
-| Re-run Uptime CI after rollback | **N/A** |
-| Close/label drill Issue | **N/A** |
+### Test URL
 
-When push GO is granted, execute mutate → evidence → rollback per [`s2-alert-drill-plan.md`](./s2-alert-drill-plan.md), then update this file to Issue/Slack **PROVEN** or **BLOCKED** with run IDs.
+`https://httpbingo.org/status/503` (curl preflight HTTP 503 OK)
 
 ---
 
-## Local artifacts ready for live drill
+## Production monitors after rollback
 
-| Artifact | Path |
-|----------|------|
-| Full procedure + rollback | `docs/operations/s2-alert-drill-plan.md` |
-| This evidence | `docs/operations/s2-alert-drill-evidence.md` |
-| Evidence validator | `scripts/validate-s2-alert-drill-evidence.sh` |
-| Runbook pointer | `docs/runbook-status.md` § alert drill |
+- AgePass: `https://agepass.devora.no/health`
+- Vipps: `https://status.vippsmobilepay.com/api/v2/summary.json`
+- No DRILL/SIMULERT site in `.upptimerc.yml`
 
 ---
 
-## Commands used (high level)
+## Operator note (label length)
 
-- Context7 `/upptime/upptime` — downtime Issues + Slack/`NOTIFICATION_*` secrets
-- `curl -sI` reachability on candidate 503 URLs
-- Inspect `.upptimerc.yml` sites (AgePass + Vipps only)
-- `bash scripts/validate-s2-alert-drill-evidence.sh` (RED then GREEN)
-- `bash scripts/validate-upptime-config.sh`
-- Secret scan pattern for `hooks.slack.com/services/…` (no literals)
-
----
-
-## Conclusions
-
-| Claim | Status |
-|-------|--------|
-| Local drill plan + rollback documented | **PROVEN** (plan file) |
-| Live GitHub Issue for SIMULERT downtime | **NOT PROVEN** — **`approval_needed`** |
-| Live Slack notification for drill | **NOT PROVEN** |
-| Production `.upptimerc.yml` free of drill monitor | **PROVEN** |
-| AgePass + Vipps URLs unchanged | **PROVEN** |
+When adding Upptime sites, keep the **generated slug** (lowercase hyphenated name) **≤ 50 characters**, or GitHub Issue creation fails with `Label name invalid` even though history updates.

@@ -76,3 +76,13 @@ Do **not** invent alternate hosts. Staging (`api-staging…`) is out of scope fo
 
 - Reachability: **NOT PROVEN**
 - Remote activate / push: **`approval_needed`**
+
+---
+
+## Azure CLI follow-up (2026-10-01T11:45Z)
+
+Subscription: `Azure subscription 1` (CLI authenticated).
+
+- `az webapp list` / `az functionapp list` / `az containerapp list` filtered for UtilitySign: **no API App Service / Function / Container App**.
+- RG `Devora-UtilitySign` has Static Web Apps (`devora-utilitysign-admin` → admin hostname works HTTP 200), storage, KV, insights, Service Bus, email — **not** `devora-utilitysign-api.azurewebsites.net`.
+- Conclusion unchanged: **NOT PROVEN** activate. DNS CNAME target has no public A/AAAA because the App Service **does not exist** (or was removed) in this subscription. Redeploy/create API app (or fix CNAME to live host) before adding Upptime monitor.

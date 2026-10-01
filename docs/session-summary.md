@@ -40,7 +40,7 @@
 | # | Anbefaling | Status |
 |---|------------|--------|
 | R1 | Cron schedule | **utsatt** — NOT PROVEN |
-| R2 | Issue + Slack drill | **utsatt** — NOT PROVEN (`approval_needed` push GO) |
+| R2 | Issue + Slack drill | **bevist** — Issue #2 + Slack `#alerts` (rolled back) |
 | R3 | n8n-beriket Slack | **utført** lokalt / live **utsatt** |
 | R4 | UtilitySign-monitor | **utsatt** — NOT PROVEN |
 | R5 | Docs cleanup | **utført** |
