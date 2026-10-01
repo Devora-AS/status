@@ -8,28 +8,28 @@ Offentlig selskapsstatus på **[https://status.devora.no](https://status.devora.
 
 Konfigurasjon i [`.upptimerc.yml`](./.upptimerc.yml). Detaljert URL-liste: [`docs/monitors.md`](./docs/monitors.md).
 
-| Komponent | Status |
-|-----------|--------|
-| AgePass prod `/health` | Aktiv |
-| Vipps Login `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn) |
-| UtilitySign | **Deferred** — ikke i `.upptimerc.yml` (DNS/reachability NOT PROVEN) |
+| Komponent                  | Status                                                               |
+| -------------------------- | -------------------------------------------------------------------- |
+| AgePass prod `/health`     | Aktiv                                                                |
+| Vipps Login `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn)                                   |
+| UtilitySign                | **Deferred** — ikke i `.upptimerc.yml` (DNS/reachability NOT PROVEN) |
 
 ## Drift
 
-| Dokument | Innhold |
-| -------- | ------- |
+| Dokument                                             | Innhold                                                                                      |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | [`docs/runbook-status.md`](./docs/runbook-status.md) | Pages (`gh-pages`), secrets, DNS (Quic.cloud), hendelser, Slack, Actions-minutter, residuals |
-| [`docs/monitors.md`](./docs/monitors.md) | Monitor-URL-er og forventet respons |
-| [`ops/n8n/README.md`](./ops/n8n/README.md) | n8n som **supplement** (beriket Slack) — eksport klar; live deploy **NOT PROVEN** |
+| [`docs/monitors.md`](./docs/monitors.md)             | Monitor-URL-er og forventet respons                                                          |
+| [`ops/n8n/README.md`](./ops/n8n/README.md)           | n8n som **supplement** (beriket Slack) — eksport klar; live deploy **NOT PROVEN**            |
 
 ## Ops-evidens (S1–S4)
 
-| Slice | Dokument | Kort status |
-|-------|----------|-------------|
-| S1 cron / Setup CI | [`docs/operations/s1-actions-cron-evidence.md`](./docs/operations/s1-actions-cron-evidence.md) | Uptime CI `schedule` **NOT PROVEN**; Setup CI 409 concurrency **deferred** |
-| S2 alert drill | [`docs/operations/s2-alert-drill-plan.md`](./docs/operations/s2-alert-drill-plan.md) + [evidens](./docs/operations/s2-alert-drill-evidence.md) | Live Issue/Slack krever eksplisitt **push GO** |
-| S3 n8n Slack | [`ops/n8n/README.md`](./ops/n8n/README.md) + [`ops/n8n/CONFIG.md`](./ops/n8n/CONFIG.md) | Workflow-eksport i repo; import til `n8n.devora.no` **NOT PROVEN** |
-| S4 UtilitySign | [`docs/operations/s4-utilitysign-monitor-plan.md`](./docs/operations/s4-utilitysign-monitor-plan.md) + [evidens](./docs/operations/s4-utilitysign-monitor-evidence.md) | Monitor deferred til reachability + push GO |
+| Slice              | Dokument                                                                                                                                                               | Kort status                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| S1 cron / Setup CI | [`docs/operations/s1-actions-cron-evidence.md`](./docs/operations/s1-actions-cron-evidence.md)                                                                         | Uptime CI `schedule` **NOT PROVEN**; Setup CI 409 concurrency **deferred** |
+| S2 alert drill     | [`docs/operations/s2-alert-drill-plan.md`](./docs/operations/s2-alert-drill-plan.md) + [evidens](./docs/operations/s2-alert-drill-evidence.md)                         | Live Issue/Slack krever eksplisitt **push GO**                             |
+| S3 n8n Slack       | [`ops/n8n/README.md`](./ops/n8n/README.md) + [`ops/n8n/CONFIG.md`](./ops/n8n/CONFIG.md)                                                                                | Workflow-eksport i repo; import til `n8n.devora.no` **NOT PROVEN**         |
+| S4 UtilitySign     | [`docs/operations/s4-utilitysign-monitor-plan.md`](./docs/operations/s4-utilitysign-monitor-plan.md) + [evidens](./docs/operations/s4-utilitysign-monitor-evidence.md) | Monitor deferred til reachability + push GO                                |
 
 ## Lokal validering
 
