@@ -20,7 +20,7 @@ sites:
       - 200
   # TEMPORARY — S2 alert drill — REMOVE after drill (SIMULERT)
   - name: DRILL SIMULERT — Devora status varslingstest (ikke produkt)
-    url: https://httpbingo.org/status/200
+    url: https://httpbingo.org/status/503
     expectedStatusCodes:
       - 200
 
