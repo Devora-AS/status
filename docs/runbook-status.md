@@ -1,15 +1,30 @@
 # Runbook — Devora status (Upptime)
 
 **Domene:** `https://status.devora.no`  
-**Repo:** `Devora-AS/status` (offentlig eller privat; Pages på private repo krever betalt plan)  
-**Stack:** Upptime → GitHub Actions + Issues + GitHub Pages
+**Repo:** `Devora-AS/status` — **offentlig** (`PUBLIC`). Privat er valgfritt senere; Pages på private repo krever betalt plan.  
+**Stack:** Upptime → GitHub Actions + Issues + GitHub Pages (`gh-pages`)
+
+---
+
+## 0. Driftstatus (ops residuals)
+
+| Tema | Status | Evidens / neste steg |
+|------|--------|----------------------|
+| Repo visibility | **Offentlig** OK | Ikke private-only som krav |
+| Pages | Branch **`gh-pages`** (root) | Setup CI / Static Site CI |
+| Monitors | AgePass + Vipps aktiv; UtilitySign **deferred** | [`monitors.md`](./monitors.md) |
+| Uptime CI cron (`schedule`) | **NOT PROVEN** | [`operations/s1-actions-cron-evidence.md`](./operations/s1-actions-cron-evidence.md) |
+| Setup CI concurrency 409 | **Deferred** | Samme S1-evidens; ikke blind retry |
+| Alert drill (Issue + Slack) | Krever **push GO** | [`operations/s2-alert-drill-plan.md`](./operations/s2-alert-drill-plan.md) |
+| n8n Slack | Eksport klar; live deploy **NOT PROVEN** | [`ops/n8n/README.md`](../ops/n8n/README.md) |
+| UtilitySign monitor | Deferred (reachability NOT PROVEN) | [`operations/s4-utilitysign-monitor-evidence.md`](./operations/s4-utilitysign-monitor-evidence.md) |
 
 ---
 
 ## 1. Første gangs oppsett (operatør)
 
 1. **Repo** — opprett eller bruk `Devora-AS/status`, push bootstrap fra denne working tree (agent push **ikke** uten GO).
-2. **Visibility** — sett repo til **Private** hvis policy krever det; verifiser at org-plan støtter **GitHub Pages på private repos**.
+2. **Visibility** — **nåværende:** offentlig. Sett til **Private** kun hvis policy krever det senere; da må org-plan støtte **GitHub Pages på private repos**.
 3. **Actions** — aktiver GitHub Actions for repoet.
 4. **Secrets** (Settings → Secrets and variables → Actions):
 
@@ -28,9 +43,11 @@
 
 ---
 
-## 2. GitHub Actions-minutter (private repo)
+## 2. GitHub Actions-minutter
 
 Upptime **Uptime CI** kjører typisk hvert **5. minutt** per monitor ≈ **~8 640** kjøringer/mnd for én workflow, pluss response-time, graphs, summary, updates, setup.
+
+På **offentlig** repo telles ikke Actions-minutter mot private-kvoten på samme måte som private workflows — følg likevel Settings → Billing. Hvis repo senere blir privat:
 
 | Scenario | Konsekvens |
 |----------|------------|
@@ -62,14 +79,18 @@ Dokumenter faktisk forbruk i Settings → Billing etter første uke.
 | Offentlig historikk | Status-UI + Issues |
 | Manuell hendelse (planlagt vedlikehold, feil utenfor monitor) | Opprett Issue i repo med label/konvensjon operatør velger; oppdater evt. Upptime maintenance via Issues/API per Upptime-dok |
 | Slack | Via `NOTIFICATION_SLACK_WEBHOOK_URL` ved statusendring |
+| **Alert drill (SIMULERT)** | Kontrollert midlertidig feilmonitor → bevis Issue + Slack → rollback. Se [`operations/s2-alert-drill-plan.md`](./operations/s2-alert-drill-plan.md). Krever eksplisitt **push GO**. Evidens: [`operations/s2-alert-drill-evidence.md`](./operations/s2-alert-drill-evidence.md). Aldri endre AgePass/Vipps-URLer. |
 
-**n8n:** Se [`ops/n8n/README.md`](../ops/n8n/README.md) — beriket Slack (f.eks. Vipps JSON degradert), **ikke** erstatning for offentlig side.
+**n8n:** Se [`ops/n8n/README.md`](../ops/n8n/README.md) — workflow-eksport i repo er klar; live import til `n8n.devora.no` er **NOT PROVEN** (`approval_needed` / MCP hard blocker). Beriket Slack (f.eks. Vipps JSON degradert) er **ikke** erstatning for offentlig side.
 
 ---
 
 ## 5. Monitors
 
 Se [`monitors.md`](./monitors.md). Endre kun [`.upptimerc.yml`](../.upptimerc.yml); Setup CI regenererer workflows ved behov.
+
+- **Aktiv:** AgePass prod `/health`, Vipps `summary.json`
+- **Deferred:** UtilitySign — se [`operations/s4-utilitysign-monitor-plan.md`](./operations/s4-utilitysign-monitor-plan.md)
 
 ---
 
@@ -96,6 +117,8 @@ Når `status.devora.no` er stabil:
 | Workflows feiler på push | `GH_PAT` scope (`repo` + **`workflow`**); branch protection; SSO authorize |
 | Ingen Slack | `NOTIFICATION_SLACK=true` (secret), webhook secret, Issue opprettet? |
 | Vipps grønn men innlogging feiler | Forventet — les Vipps JSON; bruk n8n supplement |
+| Uptime CI cron (`schedule`) synes død | Bekreft default branch `main`, cron i `.github/workflows/uptime.yml`, Actions enabled. Skill `schedule` vs `workflow_dispatch` i Actions UI/`gh run list --event schedule`. Se [`operations/s1-actions-cron-evidence.md`](./operations/s1-actions-cron-evidence.md). GitHub kan forsinke nye scheduler; manuell dispatch ≠ cron-bevis. Status: **NOT PROVEN**. |
+| Setup CI henger i `queued` / cancel HTTP 409 | Delt concurrency-gruppe `…-upptime` (`cancel-in-progress: false`). Ved *Cannot cancel…* / 409: ikke blind retry — hent fersk status; dokumenter. Zombie-queued kan kreve GitHub UI/support. Evidens: run `36841669013` (S1). **Deferred** i ops-hardening. |
 
 ---
 
@@ -103,6 +126,10 @@ Når `status.devora.no` er stabil:
 
 ```bash
 bash scripts/validate-upptime-config.sh
+bash scripts/validate-s1-cron-evidence.sh
+bash scripts/validate-s2-alert-drill-evidence.sh
+bash scripts/validate-n8n-workflow-export.sh
+bash scripts/validate-s4-utilitysign-evidence.sh
 ```
 
 Secret-scan (ingen webhook-literal i tracked kode uten docs):

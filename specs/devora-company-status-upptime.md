@@ -169,6 +169,7 @@ Hard orchestration gates remain `build-result.md` / `verify-result.md`; in-plan 
 ## Amendments
 
 - 2026-09-28T10:05:00Z — parent-orchestrator — Initial plan fra operatør-GO via `/mat-plan-team`; stack låst til Upptime.
+- 2026-10-01T10:34:00Z — builder (S5-docs-cleanup) — Living ops claim: `Devora-AS/status` er **offentlig** (`PUBLIC`); privat visibility er valgfritt senere, ikke nåværende krav. Pages-kilde forblir branch **`gh-pages`**. Aktive monitorer: AgePass + Vipps; UtilitySign deferred. n8n: eksport klar / live deploy NOT PROVEN. S1 cron NOT PROVEN; Setup CI 409 deferred; S2 drill krever push GO. Se README, `docs/runbook-status.md`, `docs/monitors.md`.
 
 ---
 

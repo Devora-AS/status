@@ -1,0 +1,198 @@
+{
+  "name": "devora-status-slack",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Beriket Slack-supplement for Vipps/summary degradert + Upptime-kontekst. Ikke offentlig status-UI."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "a1000001-0001-4001-8001-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://status.vippsmobilepay.com/api/v2/summary.json",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a1000001-0001-4001-8001-000000000002",
+      "name": "Fetch Vipps Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Vipps summary + build idempotent fingerprint (no secrets).\nconst raw = $input.first().json;\nconst indicators = raw.status || {};\nconst description = String(indicators.description || indicators.indicator || 'unknown');\nconst indicator = String(indicators.indicator || 'unknown');\nconst components = Array.isArray(raw.components) ? raw.components : [];\nconst degraded = components.filter(c => {\n  const s = (c && c.status) ? String(c.status).toLowerCase() : '';\n  return s && s !== 'operational';\n}).map(c => c.name || c.id || 'component');\n\nconst fingerprint = ['vipps', indicator, description, degraded.slice(0, 8).join('|')].join('::');\nconst shouldAlert = indicator !== 'none' && indicator !== 'operational';\n\n// Workflow staticData dedup: skip if same fingerprint already posted.\nconst store = $getWorkflowStaticData('global');\nconst last = store.lastFingerprint || '';\nconst lastAt = Number(store.lastPostedAtMs || 0);\nconst now = Date.now();\nconst cooldownMs = 30 * 60 * 1000;\nconst isDup = last === fingerprint && (now - lastAt) < cooldownMs;\n\nif (!isDup && shouldAlert) {\n  store.lastFingerprint = fingerprint;\n  store.lastPostedAtMs = now;\n}\n\nreturn [{\n  json: {\n    source: 'vipps-summary',\n    indicator,\n    description,\n    degradedComponents: degraded,\n    fingerprint,\n    shouldAlert,\n    isDuplicate: isDup,\n    agePassImpactHint: 'Mulig innvirkning på AgePass-innlogging (Vipps Login / Userinfo).',\n    publicStatusUrl: 'https://status.devora.no',\n    skip: isDup || !shouldAlert\n  }\n}];"
+      },
+      "id": "a1000001-0001-4001-8001-000000000003",
+      "name": "Enrich And Dedup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "a1000001-0001-4001-8001-000000000004",
+      "name": "Should Notify?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $env.DEVORA_STATUS_SLACK_CHANNEL || 'devora-status' }}"
+        },
+        "text": "={{ '*Devora status (n8n supplement)*\\nVipps status: `' + $json.indicator + '` — ' + $json.description + '\\n' + $json.agePassImpactHint + '\\nOffentlig UI: ' + $json.publicStatusUrl + '\\nFingerprint: `' + $json.fingerprint + '`' }}",
+        "otherOptions": {}
+      },
+      "id": "a1000001-0001-4001-8001-000000000005",
+      "name": "Post Slack Enrichment",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [960, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "PLACEHOLDER_SLACK_CRED_ID",
+          "name": "Devora Slack (n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// No-op path when deduped or Vipps operational.\nreturn [{ json: { skipped: true, reason: $json.skip ? 'dedup_or_healthy' : 'ok', fingerprint: $json.fingerprint } }];"
+      },
+      "id": "a1000001-0001-4001-8001-000000000006",
+      "name": "Skip Notify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error path: HTTP/Slack failures land here via onError continueErrorOutput.\nconst item = $input.first().json;\nconst msg = item.error || item.message || JSON.stringify(item).slice(0, 500);\nreturn [{ json: { errorHandled: true, errorMessage: String(msg), note: 'Do not expose n8n as public status UI.' } }];"
+      },
+      "id": "a1000001-0001-4001-8001-000000000007",
+      "name": "Handle Fetch Or Slack Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 600]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Vipps Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Vipps Summary": {
+      "main": [
+        [
+          {
+            "node": "Enrich And Dedup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Fetch Or Slack Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich And Dedup": {
+      "main": [
+        [
+          {
+            "node": "Should Notify?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Notify?": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Enrichment": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Handle Fetch Or Slack Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Oslo"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "export-s3-portable-001",
+  "id": "devora-status-slack",
+  "tags": [
+    {
+      "name": "devora-status",
+      "id": "tag-devora-status"
+    }
+  ]
+}

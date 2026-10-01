@@ -2,6 +2,8 @@
 
 Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen er operatørreferanse for URL-er og forventet respons.
 
+**Aktiv på status.devora.no:** AgePass + Vipps. **UtilitySign:** deferred (se under). Ops-evidens: [S1 cron](operations/s1-actions-cron-evidence.md), [S2 drill](operations/s2-alert-drill-plan.md), [S4 UtilitySign](operations/s4-utilitysign-monitor-evidence.md); n8n: [`ops/n8n/README.md`](../ops/n8n/README.md).
+
 ## AgePass
 
 | Felt | Verdi |
@@ -25,15 +27,18 @@ Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen 
 
 | Felt | Verdi |
 |------|--------|
-| **Status** | **Åpen beslutning** — ingen monitor i `.upptimerc.yml` ennå |
-| **Årsak** | Prod `GET /health`-URL er ikke bekreftet i preflight |
-| **Plan** | Legg til i `.upptimerc.yml` når URL er verifisert; alternativt `disabled: true` i config når Upptime støtter det for placeholder |
+| **Status** | **NOT PROVEN** / deferred — ingen monitor i `.upptimerc.yml` |
+| **Kandidat-URL (kildekode/docs)** | `GET https://api.utilitysign.devora.no/api/health` |
+| **Forventet HTTP (når aktiv)** | `200` (liveness; body `status: healthy` — ikke validert av Upptime i MVP) |
+| **Årsak ikke aktiv** | Curl/DNS: custom domain CNAME finnes, men Azure-mål `devora-utilitysign-api.azurewebsites.net` har ingen offentlig A/AAAA; curl `http_code=000` / resolve-feil |
+| **Plan** | [`docs/operations/s4-utilitysign-monitor-plan.md`](operations/s4-utilitysign-monitor-plan.md) + evidens [`s4-utilitysign-monitor-evidence.md`](operations/s4-utilitysign-monitor-evidence.md) |
+| **Live status.devora.no** | **NOT PROVEN** — krever reachability + operator push GO |
 
-Eksempel (kommentert — **ikke aktiv**):
+Eksempel (kommentert i docs — **ikke** aktiv i `.upptimerc.yml`):
 
 ```yaml
 # - name: UtilitySign (produksjon)
-#   url: https://TBD.utilitysign.devora.no/health
+#   url: https://api.utilitysign.devora.no/api/health
 #   expectedStatusCodes:
 #     - 200
 ```
