@@ -19,9 +19,9 @@ Konfigurasjon i [`.upptimerc.yml`](./.upptimerc.yml). Detaljert URL-liste: [`doc
 bash scripts/validate-upptime-config.sh
 ```
 
-## Merk om `index.html`
+## Offentlig nettside
 
-Rot-`index.html` er en **utfaset placeholder**. Etter første vellykkede GitHub Pages-deploy erstatter Upptime-generert innhold under `site/` den offentlige siden på `status.devora.no`.
+Innholdet på `status.devora.no` kommer **kun** fra branch **`gh-pages`** (generert av **Setup CI** / **Static Site CI**). Det finnes ingen rot-`index.html` på `main` — en slik fil kan ved feil Pages-kilde eller `pages build and deployment` på `main` overskrive Upptime-siden med en «utfaset»-stub.
 
 ## Push og GO
 

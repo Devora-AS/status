@@ -1,7 +1,7 @@
 # Runbook — Devora status (Upptime)
 
 **Domene:** `https://status.devora.no`  
-**Repo:** `Devora-AS/status` (forventet **private**)  
+**Repo:** `Devora-AS/status` (offentlig eller privat; Pages på private repo krever betalt plan)  
 **Stack:** Upptime → GitHub Actions + Issues + GitHub Pages
 
 ---
@@ -15,14 +15,14 @@
 
    | Secret | Verdi |
    |--------|--------|
-   | `GH_PAT` | Personal Access Token med `repo`, `workflow`, og Pages-skrivetilgang (nødvendig for workflow-commits og noen private-repo-mønstre) |
+   | `GH_PAT` | **Classic PAT** (anbefalt for Upptime): scopes **`repo`** + **`workflow`** (obligatorisk for Setup CI — uten `workflow` avviser GitHub push av `.github/workflows/*.yml`). **Fine-grained:** Contents *Read and write*, Actions *Read and write*, Workflows *Read and write* på dette repoet. **SSO:** Authorize token for org **Devora-AS**. Roter token ved lekkasje. |
    | `NOTIFICATION_SLACK` | `true` |
    | `NOTIFICATION_SLACK_WEBHOOK_URL` | Incoming Slack webhook URL |
    | `SLACK_WEBHOOK_URL` | *(valgfritt duplikat)* Samme webhook — listet i `.upptimerc.yml` `secrets` for dokumentasjon; Upptime leser primært `NOTIFICATION_*` |
 
    **Ingen** webhook-URL i git. Roter webhook i Slack ved lekkasje.
 
-5. **Pages** — Settings → Pages: kilde **GitHub Actions** (etter første `site.yml`-kjøring) eller branch/`site` per Upptime-dok etter Setup CI.
+5. **Pages** — Settings → Pages: kilde **Deploy from a branch** → branch **`gh-pages`** → mappe **`/ (root)`**. Upptime (peaceiris/actions-gh-pages) publiserer til `gh-pages`, **ikke** via «GitHub Actions»-kilde (da får du «There isn't a GitHub Pages site here» selv med grønn DNS). Etter Setup CI / Static Site CI: verifiser at `gh-pages` har `index.html` + `CNAME`.
 6. **Custom domain** — `status.devora.no` i Pages-innstillinger; vent på DNS + HTTPS (se §3).
 7. **Første kjøring** — push `.upptimerc.yml` trigger **Setup CI**; deretter **Uptime CI** på cron.
 
@@ -86,9 +86,15 @@ Når `status.devora.no` er stabil:
 
 | Symptom | Sjekk |
 |---------|--------|
-| Pages tom / 404 | Har `Site CI` kjørt? Er `site/` committet av Actions? |
-| Workflows feiler på push | `GH_PAT` scope; branch protection |
-| Ingen Slack | `NOTIFICATION_SLACK=true`, webhook secret, Issue opprettet? |
+| Setup CI: `refusing to allow a Personal Access Token to create or update workflow ... without workflow scope` | `GH_PAT` mangler **`workflow`** (classic) eller Workflows *write* (fine-grained). Opprett nytt token, oppdater secret, **Re-run Setup CI**. Se [run #36842751538](https://github.com/Devora-AS/status/actions/runs/36842751538). |
+| Setup CI: `Permission denied to github-actions[bot]` | Repo/org **Workflow permissions** var read-only; krever **Read and write** eller gyldig `GH_PAT` på push. |
+| Setup CI: `ENOENT ... scandir 'api'|'graphs'|'history'` | **Ikke fatal** før første vellykkede setup; mapper opprettes ved push. Valgfritt: tomme mapper med `.gitkeep` i repo. |
+| `There isn't a GitHub Pages site here` på custom domain | Pages-kilde er sannsynlig **GitHub Actions** — bytt til **branch `gh-pages`** (root). DNS kan være grønn uten at workflow-deploy finnes. |
+| Pages tom / 404 | Har Setup/Static Site CI deployet til **`gh-pages`**? Sjekk branch i repo. |
+| «Denne filen er **utfaset**…» / 739-byte `index.html` | GitHub Pages har bygget fra **`main`** (rot-`index.html` skal **ikke** finnes på `main`). Bekreft Pages-kilde = **`gh-pages`** (root). Kjør **Static Site CI** på `main`, vent til **pages build and deployment** (`gh-pages`) er **built**, hard refresh. Sjekk: `curl -sL https://status.devora.no/ \| wc -c` ≈ **7500** (Upptime), ikke **739**. |
+| Hvilken branch for manuelle workflows? | **Uptime CI**, **Graphs CI**, **Static Site CI** osv. kjøres på **`main`** — de deployer ikke feil branch; kun **Static Site CI** / **Setup CI** oppdaterer `gh-pages`. |
+| Workflows feiler på push | `GH_PAT` scope (`repo` + **`workflow`**); branch protection; SSO authorize |
+| Ingen Slack | `NOTIFICATION_SLACK=true` (secret), webhook secret, Issue opprettet? |
 | Vipps grønn men innlogging feiler | Forventet — les Vipps JSON; bruk n8n supplement |
 
 ---

@@ -27,4 +27,8 @@ grep -q 'status.vippsmobilepay.com/api/v2/summary.json' "$CONFIG" || fail "missi
 
 grep -q 'SLACK_WEBHOOK_URL' "$CONFIG" || fail "missing Slack notification reference (SLACK_WEBHOOK_URL)"
 
+RUNBOOK="${ROOT}/docs/runbook-status.md"
+[[ -f "$RUNBOOK" ]] || fail "docs/runbook-status.md not found"
+grep -q '`workflow`' "$RUNBOOK" || fail "runbook must document GH_PAT workflow scope (Setup CI push)"
+
 pass
