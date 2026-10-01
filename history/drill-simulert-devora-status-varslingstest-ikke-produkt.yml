@@ -1,7 +1,7 @@
-url: https://httpbingo.org/status/200
-status: up
-code: 200
-responseTime: 454
-lastUpdated: 2026-10-01T11:32:55.983Z
+url: https://httpbingo.org/status/503
+status: down
+code: 503
+responseTime: 92
+lastUpdated: 2026-10-01T11:35:43.902Z
 startTime: 2026-10-01T11:29:12.391Z
 generator: Upptime <https://github.com/upptime/upptime>
