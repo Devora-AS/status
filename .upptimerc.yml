@@ -25,15 +25,108 @@ status-website:
   introTitle: "**Devora** — offentlig driftsstatus for selskapets tjenester."
   introMessage: |
     Denne siden viser tilgjengelighet for AgePass og relaterte avhengigheter.
-    Data kommer fra automatiske sjekker i [GitHub-repoet](https://github.com/Devora-AS/status).
-    Vipps-raden viser **tredjeparts** status — rød Vipps betyr ikke automatisk at AgePass er nede.
+    Data kommer fra automatiske sjekker. Vipps-raden viser **tredjeparts** status —
+    rød Vipps betyr ikke automatisk at AgePass er nede.
+  allSitesOperational: Alle systemer er operative
+  notAllSitesOperational: En eller flere tjenester er utilgjengelige
+  themeUrl: https://status.devora.no/devora-status-theme.css
+  metaTags:
+    - name: theme-color
+      content: "#3432A6"
+  css: |
+    :root {
+      --body-background-color: #F8F7FF;
+      --body-text-color: #242A56;
+      --card-background-color: #FFFFFF;
+      --nav-background-color: #FFFFFF;
+      --nav-border-bottom-color: #E8E6F5;
+      --nav-current-border-bottom-color: #3432A6;
+      --card-border-color: #E8E6F5;
+      --down-border-left-color: #EF4444;
+      --down-background-color: #FEE2E2;
+      --degraded-border-left-color: #F59E0B;
+      --up-border-left-color: #22C55E;
+      --tag-color: #FFFFFF;
+      --tag-up-background-color: #22C55E;
+      --tag-down-background-color: #EF4444;
+      --tag-degraded-background-color: #F59E0B;
+      --change-background-color: #F59E0B;
+      --error-button-border-color: #242A56;
+      --error-button-background-color: #3432A6;
+      --error-button-color: #FFFFFF;
+      --submit-button-border-color: #242A56;
+      --submit-button-background-color: #3432A6;
+      --submit-button-color: #FFFFFF;
+    }
   navbar:
     - title: Status
       href: /
     - title: devora.no
       href: https://devora.no
-    - title: GitHub
-      href: https://github.com/Devora-AS/status
+
+# Norsk Bokmål UI-strenger (upptime/status-page/i18n.yml). Behold $PLACEHOLDERS.
+i18n:
+  activeIncidents: Aktive hendelser
+  allSystemsOperational: Alle systemer er operative
+  incidentReport: "Hendelse #$NUMBER — rapport →"
+  activeIncidentSummary: Åpnet $DATE med $POSTS innlegg
+  incidentTitle: Hendelse $NUMBER — detaljer
+  incidentDetails: Hendelsesdetaljer
+  incidentFixed: Løst
+  incidentOngoing: Pågående
+  incidentOpenedAt: Åpnet
+  incidentClosedAt: Lukket
+  incidentViewOnGitHub: Se og abonner på GitHub
+  incidentCommentSummary: Publisert $DATE av $AUTHOR
+  incidentBack: ← Tilbake til alle hendelser
+  pastIncidents: Tidligere hendelser
+  pastIncidentsResolved: Løst på $MINUTES minutter med $POSTS innlegg
+  liveStatus: Live status
+  overallUptime: "Samlet oppetid: $UPTIME"
+  overallUptimeTitle: Samlet oppetid
+  averageResponseTime: "Gjennomsnittlig responstid: $TIMEms"
+  averageResponseTimeTitle: Gjennomsnittlig respons
+  sevelDayResponseTime: Responstid siste 7 dager
+  responseTimeMs: Responstid (ms)
+  up: Oppe
+  down: Nede
+  degraded: Degradert
+  ms: ms
+  loading: Laster
+  navGitHub: GitHub
+  footer: Denne siden er [åpen kildekode]($REPO), drevet av [Upptime](https://upptime.js.org)
+  rateLimitExceededTitle: Hastighetsgrense overskredet
+  rateLimitExceededIntro: Du har overskredet antallet forespørsler du kan gjøre på én time, så du må vente før du kan bruke nettstedet igjen. Alternativt kan du legge til en GitHub Personal Access Token for å fortsette.
+  rateLimitExceededWhatDoesErrorMean: Hva betyr denne feilen?
+  rateLimitExceededErrorMeaning: Dette nettstedet bruker GitHub API for sanntidsstatus. Som standard tillater GitHub 60 forespørsler per time per IP-adresse, og du har brukt opp denne kvoten.
+  rateLimitExceededErrorHowCanFix: Hvordan kan jeg fikse det?
+  rateLimitExceededErrorFix: Du kan vente én time til IP-grensen er tilbakestilt. Alternativt kan du legge til din GitHub Personal Access Token, som gir ytterligere 5000 forespørsler per time.
+  rateLimitExceededGeneratePAT: Slik lager du en Personal Access Token
+  rateLimitExceededHasSet: Du har satt en personal access token.
+  rateLimitExceededRemoveToken: Fjern token
+  rateLimitExceededGitHubPAT: GitHub Personal Access Token
+  rateLimitExceededCopyPastePAT: Kopier og lim inn tokenet ditt
+  rateLimitExceededSaveToken: Lagre token
+  errorTitle: Det oppstod en feil
+  errorIntro: Det oppstod en feil under henting av siste statusdetaljer.
+  errorText: Prøv igjen om litt.
+  errorHome: Gå til startsiden
+  pastScheduledMaintenance: Tidligere planlagt vedlikehold
+  scheduledMaintenance: Planlagt vedlikehold
+  scheduledMaintenanceSummaryStarted: Startet $DATE i $DURATION minutter
+  scheduledMaintenanceSummaryStarts: Starter $DATE i $DURATION minutter
+  startedAt: Startet
+  startsAt: Starter
+  duration: Varighet
+  durationMin: $DURATION minutter
+  incidentCompleted: Fullført
+  incidentScheduled: Planlagt
+  duration24H: 24t
+  duration7D: 7d
+  duration30D: 30d
+  duration1Y: 1å
+  durationAll: alle
+  locale: nb-NO
 
 # Varsling: Slack via GitHub Actions Secrets (ingen URL i git).
 # Sett NOTIFICATION_SLACK=true og NOTIFICATION_SLACK_WEBHOOK_URL til webhook-URL.

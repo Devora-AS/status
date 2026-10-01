@@ -1,51 +1,47 @@
 # Build Result
 
 ## Task
-S6-final-verify — final verification matrix, validators, honesty residuals
+status-nb-brand-nav — remove GitHub navbar, NB i18n, DESIGN.md + verified Upptime theme
 
 ## Status
 PASS
 
 ## Changes Made
-- `docs/operations/s6-final-verification.md`: Recommendation matrix (R1–R6), residuals, live recheck, session-summary draft
-- `scripts/validate-s6-final-verification.sh`: TDD evidence-contract validator (RED missing file → GREEN)
-- `docs/current-plan.md`: Step/AC markers → `[x]` (step 7 after this artifact)
+- `scripts/validate-status-website-ux.sh`: new TDD gate (GitHub navbar absent, DESIGN.md, NB `i18n`, theme asset/`themeUrl`/`theme-color`, AgePass+Vipps only)
+- `DESIGN.md`: root design.md front matter + prose; AgePass/Devora tokens mapped to Upptime CSS vars
+- `.upptimerc.yml`: removed GitHub navbar item; full NB `i18n` (`locale: nb-NO`); `allSitesOperational`/`notAllSitesOperational`; `themeUrl` + inline `css` `:root` vars; `metaTags` `theme-color`; intro without GitHub promo link
+- `assets/devora-status-theme.css`: light-theme CSS variables from DESIGN.md
+- `docs/current-plan.md`: step/AC markers `[]`→`[x]`
 
 ## Acceptance Criteria
-- AC-1: PASS — All listed validators exit 0 (upptime, s1, s2, n8n, s4, s6; `bash -n`; n8n JSON load)
-- AC-2: PASS — `.upptimerc.yml` = AgePass + Vipps only; no DRILL/SIMULERT/UtilitySign active
-- AC-3: PASS — `docs/operations/s6-final-verification.md` has matrix + residual honesty labels
-- AC-4: PASS — Secret scan clean (no Slack webhook / token literals in new evidence/script)
-- AC-5: PASS — Live cron/Issue/Slack/n8n/UtilitySign remain NOT PROVEN (not falsely PROVEN); schedule recheck still empty `[]`
+- AC1: PASS — navbar is Status + devora.no only; no `github.com` href in `status-website.navbar`
+- AC2: PASS — root `DESIGN.md` with YAML front matter; maps primary/navy/page bg to `--nav-current-border-bottom-color` / `--body-*`; `npx @google/design.md lint DESIGN.md` → 0 errors (warnings only)
+- AC3: PASS — top-level `i18n:` complete from status-page `i18n.yml`, `locale: nb-NO`, æ/ø/å present; `$UPTIME`/`$TIME`/`$REPO`/`$NUMBER` preserved; sites/paths unchanged
+- AC4: PASS — `themeUrl: https://status.devora.no/devora-status-theme.css` + `assets/devora-status-theme.css` + duplicate `css` `:root` + `theme-color: #3432A6` (documented Upptime hooks only)
+- AC5: PASS — RED then GREEN on `validate-status-website-ux.sh`; `validate-upptime-config.sh` PASS; sites AgePass + Vipps only
+- AC6: PASS — playwright-cli vs live `https://status.devora.no` recorded (GitHub nav + English + teal `#1abc9c` still live); local config proof GREEN; **no commit/push**
+- AC7: PASS — no custom SCSS fork / gh-pages edits; no UtilitySign/DRILL
 
 ## Linting / Type-Check
 PASS
 ```text
+validate-status-website-ux: PASS
 validate-upptime-config: PASS
-validate-s1-cron-evidence: PASS
-validate-s2-alert-drill-evidence: PASS
-validate-n8n-workflow-export: PASS
-validate-s4-utilitysign-evidence: PASS
-validate-s6-final-verification: PASS
-bash -n scripts/validate-s6-final-verification.sh: PASS
-python3 JSON load n8n workflow: PASS
-secret-scan: clean
+bash -n scripts/validate-status-website-ux.sh: PASS
+npx @google/design.md lint DESIGN.md: 0 errors (orphaned-token warnings OK)
+playwright-cli open https://status.devora.no/: OK (baseline lag documented)
 ```
 
 ## Issues / Blockers
-None for S6 local scope. Known residuals remain (documented, not flipped):
-- schedule NOT PROVEN
-- Setup CI `36841669013` BLOCKED/409 DEFERRED (still `queued`)
-- Issue/Slack drill NOT PROVEN (`approval_needed`)
-- n8n live deploy NOT PROVEN
-- UtilitySign activate NOT PROVEN
+None for local/config scope. Live site will lag until operator push + Upptime static-site workflow publishes `assets/` and regenerates the status page.
 
 ## Notes for Verifier
-- Live optional recheck UTC `2026-10-01T10:38:27Z`: `status.devora.no` HTTP 200 size 7487 `__SAPPER__`; `gh run list --event schedule` → `[]` — **no residual flipped to PROVEN**
-- TDD: validator FAIL on missing evidence file; PASS with committed contract file
-- Six recommendations scored: R1–R4/R6 not live-bevist; R5 docs utført; R6 cancel blocked
-- No push; no live drill; no UtilitySign activate; no secrets
-- Parent owns `docs/session-summary.md` finalize after verify PASS (draft bullets in S6 evidence)
+- TDD: first RED was GitHub navbar present (`validate-status-website-ux` FAIL); fixed awk edge so `--css-var` greps use `grep --` on macOS
+- Live baseline (2026-10-01): nav still has GitHub → `https://github.com/Devora-AS/status`; UI English (`Live Status`, `All systems are operational`); `--nav-current-border-bottom-color` = `#1abc9c`
+- Local ready: navbar titles `['Status', 'devora.no']`; theme file + `themeUrl` + NB i18n in tree
+- Context7 `/upptime/upptime` + upptime.js.org confirmed `themeUrl`/`assets/*.css`, `i18n`, navbar, `css`, `metaTags`
+- Snapshots under `.playwright-cli/` are local evidence only (not for commit)
+- Parent owns build→validate transition / `[mao:build]` completed
 
 ## Closeout (2026-10-01)
-S6 local gates green; honesty matrix written; schedule still NOT PROVEN; ready for verifier.
+Deploy-ready config for NB + brand + no GitHub nav; validators green; live lag documented; no commit/push.
