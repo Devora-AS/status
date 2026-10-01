@@ -18,12 +18,6 @@ sites:
     url: https://status.vippsmobilepay.com/api/v2/summary.json
     expectedStatusCodes:
       - 200
-  # TEMPORARY — S2 alert drill — REMOVE after drill (SIMULERT)
-  # NOTE: site name must keep generated label slug ≤50 chars (GitHub label limit)
-  - name: DRILL SIMULERT status-test
-    url: https://httpbingo.org/status/503
-    expectedStatusCodes:
-      - 200
 
 status-website:
   cname: status.devora.no
