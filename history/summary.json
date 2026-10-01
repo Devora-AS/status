@@ -10,11 +10,11 @@
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
     "uptimeYear": "100.00%",
-    "time": 1166,
-    "timeDay": 1166,
-    "timeWeek": 1166,
-    "timeMonth": 1166,
-    "timeYear": 1166,
+    "time": 1129,
+    "timeDay": 1129,
+    "timeWeek": 1129,
+    "timeMonth": 1129,
+    "timeYear": 1129,
     "dailyMinutesDown": {}
   },
   {
@@ -28,31 +28,11 @@
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
     "uptimeYear": "100.00%",
-    "time": 690,
-    "timeDay": 690,
-    "timeWeek": 690,
-    "timeMonth": 690,
-    "timeYear": 690,
+    "time": 614,
+    "timeDay": 614,
+    "timeWeek": 614,
+    "timeMonth": 614,
+    "timeYear": 614,
     "dailyMinutesDown": {}
-  },
-  {
-    "name": "DRILL SIMULERT status-test",
-    "url": "https://httpbingo.org/status/503",
-    "icon": "https://icons.duckduckgo.com/ip3/httpbingo.org.ico",
-    "slug": "drill-simulert-status-test",
-    "status": "down",
-    "uptime": "60.52%",
-    "uptimeDay": "60.52%",
-    "uptimeWeek": "60.52%",
-    "uptimeMonth": "60.52%",
-    "uptimeYear": "60.52%",
-    "time": 47,
-    "timeDay": 47,
-    "timeWeek": 47,
-    "timeMonth": 47,
-    "timeYear": 47,
-    "dailyMinutesDown": {
-      "2026-10-01": 0
-    }
   }
 ]
