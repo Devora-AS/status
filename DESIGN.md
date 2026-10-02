@@ -194,6 +194,7 @@ Scope the filter to `article.graph` only so Vipps/site icons and Chart.js canvas
 | `assets/favicon.png` | Tab icon **and** dark-theme nav mark (visible on dark nav) |
 | `assets/favicon.svg` | Crisp SVG sibling for `rel=icon type=image/svg` |
 | `assets/logo-192.png` / `assets/logo-512.png` | PWA / fallback PNG sizes |
+| `assets/vipps-logg-inn.png` | Live status icon for **Vipps Logg Inn** (`sites[].icon`) |
 
 Wire via documented Upptime hooks:
 
@@ -202,8 +203,13 @@ status-website:
   favicon: https://status.devora.no/favicon.png
   faviconSvg: https://status.devora.no/favicon.svg
   logoUrl: https://status.devora.no/logo-header.png  # light first-paint
+
+sites:
+  - name: Vipps Logg Inn
+    icon: https://status.devora.no/vipps-logg-inn.png
 ```
 
+**Per-site icons:** Upptime `sites[].icon` overrides the DuckDuckGo favicon fallback. Vipps Logg Inn uses the hosted Vipps Login mark in `assets/vipps-logg-inn.png` (copied to site root by Static Site CI).
 **Theme-dependent nav logo:** Default `logoUrl` stays `logo-header.png` for SSR/first paint. `status-website.js` swaps the header `<img>` to `favicon.png` when dark (`data-theme="dark"` or `prefers-color-scheme: dark` without light override), and back to `logo-header.png` in light. Tab favicon remains `favicon.png` / `faviconSvg` regardless of theme.
 
 Do not leave favicon unset — the status page falls back to the Upptime icon SVG.
