@@ -146,4 +146,32 @@ if grep -qE '^[[:space:]]+css:' "$CONFIG"; then
   grep -qE -- '--body-background-color' "$CONFIG" || fail "status-website.css present but missing --body-background-color"
 fi
 
+# --- AC5: Chart.js graph colors (Graph.svelte reads root config.graphBorderColor / graphBackgroundColor) ---
+# Defaults in @upptime/status-page are teal #1abc9c / #89e0cf — must be overridden with Devora tokens.
+if ! grep -qE '^graphBorderColor:[[:space:]]*"?#3432A6"?' "$CONFIG"; then
+  fail "root graphBorderColor must be Devora primary #3432A6 (Chart.js borderColor; not CSS --up-*)"
+fi
+if ! grep -qE '^graphBackgroundColor:[[:space:]]*"?(#968AB6|#FFFADE|#C4BFE0)"?' "$CONFIG"; then
+  fail "root graphBackgroundColor must be a Devora brand fill (#968AB6 / #FFFADE / #C4BFE0)"
+fi
+# Reject leftover Upptime teal if explicitly set
+if grep -qiE 'graphBorderColor:.*#1abc9c|graphBackgroundColor:.*#89e0cf' "$CONFIG"; then
+  fail "graph colors must not use Upptime teal defaults (#1abc9c / #89e0cf)"
+fi
+
+# --- AC6: Devora favicon via documented status-website.favicon / faviconSvg + assets ---
+FAVICON_PNG="${ROOT}/assets/favicon.png"
+[[ -f "$FAVICON_PNG" ]] || fail "assets/favicon.png missing (Devora mark for status favicon)"
+if ! grep -qE '^[[:space:]]+favicon:[[:space:]]*https://status\.devora\.no/favicon\.png' "$CONFIG"; then
+  fail "status-website.favicon must be https://status.devora.no/favicon.png (assets served as-is)"
+fi
+# SVG optional but preferred when present
+if [[ -f "${ROOT}/assets/favicon.svg" ]]; then
+  if ! grep -qE '^[[:space:]]+faviconSvg:[[:space:]]*https://status\.devora\.no/favicon\.svg' "$CONFIG"; then
+    fail "assets/favicon.svg exists but status-website.faviconSvg is not wired to status.devora.no/favicon.svg"
+  fi
+fi
+grep -qiE 'favicon|graphBorderColor' "$DESIGN" || \
+  fail "DESIGN.md must document favicon and graphBorderColor / graphBackgroundColor"
+
 pass

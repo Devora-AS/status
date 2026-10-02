@@ -110,8 +110,38 @@ Custom theme file: `assets/devora-status-theme.css`, published as `https://statu
 
 Also set `metaTags` `theme-color` to `#3432A6`.
 
+## Response-time chart (Chart.js)
+
+Live canvas charts are **not** driven by `--up-*` / `--tag-up-*` CSS variables. `@upptime/status-page` `Graph.svelte` reads **root** `.upptimerc.yml` keys (copied into `config.json`):
+
+| Config key | DESIGN token | Purpose |
+|------------|--------------|---------|
+| `graphBorderColor` | `primary` `#3432A6` | Line stroke (replaces Upptime default `#1abc9c`) |
+| `graphBackgroundColor` | `secondary-purple` `#968AB6` | Area fill (replaces `#89e0cf`) |
+
+Optional CSS `--graph-filter` can recolor default teal when those keys are unset; prefer the config keys above.
+
+## Favicon / mark
+
+| Asset | Role |
+|-------|------|
+| `assets/favicon.png` | Devora mark (dark background) — uploaded brand symbol |
+| `assets/favicon.svg` | Crisp SVG sibling for `rel=icon type=image/svg` |
+| `assets/logo-192.png` / `assets/logo-512.png` | PWA / fallback PNG sizes |
+
+Wire via documented Upptime hooks:
+
+```yaml
+status-website:
+  favicon: https://status.devora.no/favicon.png
+  faviconSvg: https://status.devora.no/favicon.svg
+  logoUrl: https://status.devora.no/favicon.png
+```
+
+Do not leave favicon unset — the status page falls back to the Upptime icon SVG.
+
 ## Out of scope
 
 - Undocumented SCSS forks or hand-editing `gh-pages` as the primary fix
 - UtilitySign monitor activation on this page
-- Invented logo URLs
+- Invented logo URLs outside `assets/` + `status.devora.no`

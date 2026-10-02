@@ -4,6 +4,11 @@
 owner: Devora-AS
 repo: status
 
+# Chart.js colors on status page (Graph.svelte reads these from root config.json).
+# Defaults are Upptime teal (#1abc9c / #89e0cf) — override with DESIGN.md tokens.
+graphBorderColor: "#3432A6"
+graphBackgroundColor: "#968AB6"
+
 secrets:
   - SLACK_WEBHOOK_URL
   - NOTIFICATION_SLACK
@@ -29,6 +34,10 @@ status-website:
     rød Vipps betyr ikke automatisk at AgePass er nede.
   allSitesOperational: Alle systemer er operative
   notAllSitesOperational: En eller flere tjenester er utilgjengelige
+  # Favicons: assets/* are copied to site root by Static Site CI (served as-is).
+  favicon: https://status.devora.no/favicon.png
+  faviconSvg: https://status.devora.no/favicon.svg
+  logoUrl: https://status.devora.no/favicon.png
   themeUrl: https://status.devora.no/devora-status-theme.css
   metaTags:
     - name: theme-color
