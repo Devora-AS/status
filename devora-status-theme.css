@@ -131,6 +131,13 @@ canvas {
   color: var(--body-text-color);
 }
 
+/* Spacing between operational banner and relocated legend (Sapper sibling order). */
+main.container > article.up + .devora-status-legend,
+main.container > article.down + .devora-status-legend,
+main.container > article.degraded + .devora-status-legend {
+  margin-top: 12px;
+}
+
 .devora-status-legend__title {
   font-size: 0.875rem;
   font-weight: 700;
