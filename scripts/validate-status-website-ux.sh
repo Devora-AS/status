@@ -364,6 +364,16 @@ fi
 if ! echo "$js_block" | grep -qE 'insertAdjacentElement|insertBefore|after\(|nextSibling|parentNode\.insertBefore'; then
   fail "status-website.js must relocate legend DOM node after status summary article"
 fi
+# Sapper hydrates article.up after DOMContentLoaded — must retry (MutationObserver childList and/or interval)
+if ! echo "$js_block" | grep -qE 'MutationObserver'; then
+  fail "status-website.js must use MutationObserver to relocate legend after Sapper hydrates article.up"
+fi
+if ! echo "$js_block" | grep -qE 'childList|subtree'; then
+  fail "status-website.js legend MutationObserver must watch childList/subtree (banner appears late)"
+fi
+if ! echo "$js_block" | grep -qE 'live-status|closest\(|:scope > article'; then
+  fail "status-website.js must not treat section.live-status article.up as the operational banner"
+fi
 
 # AC2: theme-dependent header logo — dark → favicon.png; light → logo-header.png
 if ! echo "$js_block" | grep -qE 'favicon\.png'; then

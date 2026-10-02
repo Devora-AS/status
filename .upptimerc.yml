@@ -109,13 +109,42 @@ status-website:
           if (!img) return;
           img.src = isDark() ? LOGO_DARK : LOGO_LIGHT;
         }
+        function findStatusBanner() {
+          var main = document.querySelector("main.container, main");
+          if (main) {
+            var direct = main.querySelectorAll(":scope > article.up, :scope > article.down, :scope > article.degraded");
+            if (direct && direct.length) return direct[0];
+          }
+          var all = document.querySelectorAll("article.up, article.down, article.degraded");
+          for (var i = 0; i < all.length; i++) {
+            if (!all[i].closest || !all[i].closest("section.live-status")) return all[i];
+          }
+          return null;
+        }
         function relocateLegend() {
           var legend = document.querySelector("aside.devora-status-legend, aside.status-legend, .devora-status-legend");
-          if (!legend) return;
-          var banner = document.querySelector("main article.up, main article.down, main article.degraded, article.up, article.down, article.degraded");
-          if (!banner || !banner.parentNode) return;
-          if (legend.previousElementSibling === banner) return;
+          if (!legend) return false;
+          var banner = findStatusBanner();
+          if (!banner || !banner.parentNode) return false;
+          if (legend.previousElementSibling === banner) return true;
           banner.insertAdjacentElement("afterend", legend);
+          return true;
+        }
+        function watchLegendPlacement() {
+          if (relocateLegend()) return;
+          var target = document.querySelector("#sapper, main.container, main, body");
+          if (target && typeof MutationObserver !== "undefined") {
+            var obs = new MutationObserver(function () {
+              if (relocateLegend()) obs.disconnect();
+            });
+            obs.observe(target, { childList: true, subtree: true });
+            setTimeout(function () { try { obs.disconnect(); } catch (e) {} }, 20000);
+          }
+          var n = 0;
+          var t = setInterval(function () {
+            n++;
+            if (relocateLegend() || n > 80) clearInterval(t);
+          }, 250);
         }
         function ensureBtn() {
           var btn = document.getElementById("devora-theme-toggle");
@@ -148,7 +177,7 @@ status-website:
         }
         onReady(function () {
           ensureBtn().textContent = label();
-          relocateLegend();
+          watchLegendPlacement();
           syncLogo();
           if (typeof MutationObserver !== "undefined") {
             new MutationObserver(function () { syncLogo(); }).observe(root, {

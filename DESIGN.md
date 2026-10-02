@@ -105,7 +105,7 @@ Visitor-facing operational copy mirrors Digdir’s status.digdir.no tone (Norweg
 
 **Status legend** is injected via documented `status-website.customBodyHtml` (classes `.devora-status-legend` / `.status-legend`) and styled in `assets/devora-status-theme.css`. Upptime only has **up / degraded / down** + scheduled maintenance — the five Digdir-inspired rows are labels for visitors, not five live Upptime states.
 
-**Placement:** `customBodyHtml` injects the aside early in the body. `status-website.js` relocates it on DOM ready to sit **directly below** the operational banner (`main article.up`, or `article.down` / `article.degraded` when not all systems are operational) so the legend follows «Alle våre systemer fungerer normalt» in main content — not as a top/left orphan above the banner. Norwegian copy is unchanged.
+**Placement:** `customBodyHtml` injects the aside early in `#sapper` (above nav). `status-website.js` relocates it **after Sapper hydrates** the operational banner (`main.container > article.up|down|degraded`, never `section.live-status article`) via `MutationObserver` (`childList`/`subtree`) + interval retry — a single `DOMContentLoaded` call is too early because `article.up` is client-rendered. Target order: banner → legend → «Live status». Norwegian copy is unchanged.
 
 | Digdir-inspired label | Upptime meaning | Token |
 |-----------------------|-----------------|-------|
