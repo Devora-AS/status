@@ -8,11 +8,11 @@ Offentlig selskapsstatus på **[https://status.devora.no](https://status.devora.
 
 Konfigurasjon i [`.upptimerc.yml`](./.upptimerc.yml). Detaljert URL-liste: [`docs/monitors.md`](./docs/monitors.md).
 
-| Komponent                  | Status                                                               |
-| -------------------------- | -------------------------------------------------------------------- |
-| AgePass `/health`           | Aktiv                                                                |
-| Vipps Logg Inn `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn); ikon `vipps-logg-inn.png`      |
-| UtilitySign                | **Deferred** — ikke i `.upptimerc.yml` (DNS/reachability NOT PROVEN) |
+| Komponent                     | Status                                                               |
+| ----------------------------- | -------------------------------------------------------------------- |
+| AgePass `/health`             | Aktiv                                                                |
+| Vipps Logg Inn `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn); ikon `vipps-logg-inn.png`        |
+| UtilitySign                   | **Deferred** — ikke i `.upptimerc.yml` (DNS/reachability NOT PROVEN) |
 
 ## Drift
 
