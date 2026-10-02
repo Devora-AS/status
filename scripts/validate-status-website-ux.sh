@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Validates Devora status-website UX: Digdir copy/legend, logo, graph filter, light/dark, no GitHub navbar.
-# Run from repo root. TDD gate for status-digdir-ux-logo-graph-theme slice.
+# Validates Devora status-website UX: Digdir copy/legend, logo, Live cards (no article.graph
+# filter), pinned monitor slugs, light/dark, no GitHub navbar.
+# Run from repo root. TDD gate for status-website UX slices.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -61,8 +62,8 @@ grep -qiE 'body-background-color|nav-current-border-bottom-color' "$DESIGN" || \
 
 # Digdir UX / logo / graph / light-dark documentation (slice status-digdir-ux-logo-graph-theme)
 grep -qiE 'logo-header|logoUrl' "$DESIGN" || fail "DESIGN.md must document logo-header / logoUrl"
-grep -qiE 'graph-filter|article\.graph|LiveStatus|Graphs CI|PNG' "$DESIGN" || \
-  fail "DESIGN.md must document live PNG graph filter vs Chart.js keys"
+grep -qiE 'graph-filter|article\.graph|LiveStatus|Graphs CI|PNG|filter removal|no filter' "$DESIGN" || \
+  fail "DESIGN.md must document LiveStatus / Graphs CI PNG policy (incl. no article.graph filter)"
 grep -qiE 'prefers-color-scheme|light.?dark|data-theme' "$DESIGN" || \
   fail "DESIGN.md must document light/dark theme architecture"
 grep -qiE 'Normal drift|Digdir|legend' "$DESIGN" || \
@@ -203,46 +204,87 @@ if grep -qiE 'graphBorderColor:.*#1abc9c|graphBackgroundColor:.*#89e0cf' "$CONFI
   fail "graph colors must not use Upptime teal defaults (#1abc9c / #89e0cf)"
 fi
 
-# LiveStatus PNG graph filter (AC4) — stock article .graph misses article.graph
-if ! grep -qE 'article\.graph' "$THEME_CSS"; then
-  fail "theme CSS must include explicit article.graph rule (LiveStatus PNG backgrounds)"
-fi
-# --graph-filter must not be none (or article.graph must apply a non-none filter)
-if grep -qE -- '--graph-filter:[[:space:]]*none' "$THEME_CSS"; then
-  # allow none only if article.graph sets a concrete filter not via the none var
-  if ! grep -qE 'article\.graph[[:space:]]*\{[^}]*filter:[^;]*(hue-rotate|saturate|sepia)' "$THEME_CSS"; then
-    # multiline-friendly: require --graph-filter assigned to something other than none somewhere
-    if ! python3 - "$THEME_CSS" <<'PY'
+# --- Slice status-livestatus-color-graph-slug-fix ---
+# AC1: NEVER apply filter/opacity on article.graph — hue-rotate shifts entire Live cards
+# (background + text) to cream/reddish. Brand sparklines via root graphBorderColor /
+# graphBackgroundColor only; keep canvas { filter: none }.
+if python3 - "$THEME_CSS" <<'PY'
 import re, sys
 css = open(sys.argv[1], encoding="utf-8").read()
-# Find --graph-filter declarations that are not none
-vals = re.findall(r"--graph-filter\s*:\s*([^;]+);", css)
-non_none = [v.strip() for v in vals if v.strip().lower() != "none"]
-if not non_none:
-    sys.exit(1)
-# Prefer article.graph using the var or a filter
-if not re.search(r"article\.graph\s*\{[^}]*filter\s*:", css, re.S):
-    sys.exit(1)
+# Reject any article.graph rule that sets filter: (including var(--graph-filter))
+if re.search(r"article\.graph\s*\{[^}]*\bfilter\s*:", css, re.S):
+    sys.exit(0)  # bad → fail below
+sys.exit(1)
+PY
+then
+  fail "theme CSS must NOT apply filter: to article.graph (hue-shifts Live status cards)"
+fi
+# Mirrored status-website.css must also avoid article.graph filter
+if grep -qE '^[[:space:]]+css:' "$CONFIG"; then
+  if python3 - "$CONFIG" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+m = re.search(r"(?m)^  css:\s*\|\s*\n((?:(?: {4}|\t).*\n)+)", text)
+if not m:
+    sys.exit(1)  # no block → skip (other checks cover)
+css = m.group(1)
+if re.search(r"article\.graph\s*\{[^}]*\bfilter\s*:", css, re.S):
+    sys.exit(0)  # bad → fail below
+sys.exit(1)
+PY
+  then
+    fail "status-website.css must NOT apply filter: to article.graph"
+  fi
+fi
+# section.live-status article must also stay unfiltered
+if python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+if re.search(r"section\.live-status[^{]*\{[^}]*\bfilter\s*:", css, re.S | re.I):
+    sys.exit(0)
+sys.exit(1)
+PY
+then
+  fail "section.live-status rules must NOT apply filter: (card surfaces stay unfiltered)"
+fi
+# canvas safety rail remains
+if ! grep -qE 'canvas[[:space:]]*\{[^}]*filter:[[:space:]]*none|canvas[^{]*\{[^}]*filter:[[:space:]]*none' "$THEME_CSS" \
+  && ! python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+sys.exit(0 if re.search(r"canvas[^{]*\{[^}]*filter\s*:\s*none", css, re.S) else 1)
+PY
+then
+  fail "theme CSS must keep canvas { filter: none } safety rail"
+fi
+
+# AC2: pinned historical slugs (display names AgePass / Vipps Logg Inn must not orphan history)
+if ! python3 - "$CONFIG" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+# Parse sites: list items with name + optional slug
+sites = re.findall(
+    r"(?m)^  - name:\s*(.+?)\s*\n((?:(?:    |\t).*\n)*)",
+    text,
+)
+by_name = {}
+for name, body in sites:
+    name = name.strip().strip("\"'")
+    slug_m = re.search(r"(?m)^    slug:\s*(\S+)", body)
+    by_name[name] = slug_m.group(1).strip().strip("\"'") if slug_m else None
+expected = {
+    "AgePass": "age-pass-produksjon",
+    "Vipps Logg Inn": "vipps-login-upstream-ikke-age-pass",
+}
+for name, slug in expected.items():
+    if name not in by_name:
+        sys.exit(1)
+    if by_name[name] != slug:
+        sys.exit(1)
 sys.exit(0)
 PY
-    then
-      fail "--graph-filter must recolor teal Graphs CI PNGs (not none); article.graph must apply filter"
-    fi
-  fi
-else
-  # Ensure a non-none --graph-filter exists
-  if ! grep -qE -- '--graph-filter:[[:space:]]*(?!none)' "$THEME_CSS" 2>/dev/null; then
-    if ! python3 - "$THEME_CSS" <<'PY'
-import re, sys
-css = open(sys.argv[1], encoding="utf-8").read()
-vals = re.findall(r"--graph-filter\s*:\s*([^;]+);", css)
-non_none = [v.strip() for v in vals if v.strip().lower() != "none"]
-sys.exit(0 if non_none else 1)
-PY
-    then
-      fail "theme CSS must set --graph-filter to a non-none recolor (hue-rotate/saturate/…)"
-    fi
-  fi
+then
+  fail "sites AgePass / Vipps Logg Inn must pin slug: age-pass-produksjon / vipps-login-upstream-ikke-age-pass"
 fi
 
 # --- AC6: Devora favicon via documented status-website.favicon / faviconSvg + assets ---

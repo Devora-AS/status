@@ -165,24 +165,36 @@ Live canvas charts are **not** driven by `--up-*` / `--tag-up-*` CSS variables. 
 | `graphBorderColor` | `primary` `#3432A6` | Line stroke (replaces Upptime default `#1abc9c`) |
 | `graphBackgroundColor` | `secondary-purple` `#968AB6` | Area fill (replaces `#89e0cf`) |
 
-### B) Live status card sparklines (Graphs CI PNGs)
+### B) Live status card sparklines (Graphs CI PNGs) — **no CSS filter**
 
-`LiveStatus.svelte` paints **PNG backgrounds** from Graphs CI on `article.graph`. `@upptime/graphs` hardcodes teal `#1abc9c` / `#89e0cf` — root Chart.js keys do **not** recolor those PNGs.
+`LiveStatus.svelte` paints **PNG backgrounds** from Graphs CI on `<article class="graph">`. That element is the **entire Live status card** (background + text + sparkline), not a nested sparkline node.
 
-Stock Upptime `global.css` uses selector `article .graph` (descendant), which does **not** match LiveStatus’s `article.graph`. Theme CSS therefore must:
+**Do not** apply `filter:` / `opacity` on `article.graph` (or `section.live-status article`). A hue-rotate meant to recolor teal PNGs toward Devora purple also hue-shifts card surfaces → light cream / dark reddish cards instead of `--card-background-color` (`#FFFFFF` / `#1B2438`).
 
-```css
-:root {
-  --graph-filter: hue-rotate(72deg) saturate(0.95) brightness(0.92);
-  --graph-opacity: 0.95;
-}
-article.graph {
-  filter: var(--graph-filter);
-  opacity: var(--graph-opacity);
-}
-```
+Brand colors for charts:
 
-Scope the filter to `article.graph` only so Vipps/site icons and Chart.js canvases are not hue-shifted. Theme CSS also forces `canvas { filter: none }` as a safety rail.
+| Path | Mechanism |
+|------|-----------|
+| Chart.js detail graphs | Root `graphBorderColor` / `graphBackgroundColor` (`#3432A6` / `#968AB6`) |
+| Graphs CI PNG teal | Accept stock teal on Live cards, **or** regenerate PNGs upstream — **not** via `article.graph { filter }` |
+
+Theme CSS keeps `canvas { filter: none }` so Chart.js canvases are never hue-shifted.
+
+### C) Monitor slug continuity (history / graphs)
+
+Upptime derives site slugs from `sites[].name` unless `slug` is set. Renaming a display name **orphans** `history/<old-slug>.yml` and `graphs/<old-slug>/` and can leave Summary/Graphs with a single sample (diagonal sparkline fill).
+
+**Operator rule:** Never change `sites[].name` without either:
+
+1. Pinning `slug:` to the **historical** slug (preferred for friendly titles), **or**
+2. Migrating `history/`, `graphs/`, and any `api/` paths to the new slug.
+
+Do not delete historical assets during UX/CSS commits. Pinned today:
+
+| Display name | Pinned `slug` |
+|--------------|---------------|
+| AgePass | `age-pass-produksjon` |
+| Vipps Logg Inn | `vipps-login-upstream-ikke-age-pass` |
 
 ## Favicon / header logo
 
@@ -204,11 +216,15 @@ status-website:
   logoUrl: https://status.devora.no/logo-header.png  # light first-paint
 
 sites:
+  - name: AgePass
+    slug: age-pass-produksjon
   - name: Vipps Logg Inn
+    slug: vipps-login-upstream-ikke-age-pass
     icon: https://status.devora.no/vipps-logg-inn.png
 ```
 
 **Per-site icons:** Upptime `sites[].icon` overrides the DuckDuckGo favicon fallback. Vipps Logg Inn uses the hosted Vipps Login mark in `assets/vipps-logg-inn.png` (copied to site root by Static Site CI).
+**Slug pins:** Keep friendly `name` values while pinning `slug` to historical paths (see §C above). Never rename without a pin or migration.
 **Theme-dependent nav logo:** Default `logoUrl` stays `logo-header.png` for SSR/first paint. `status-website.js` swaps the header `<img>` to `favicon.png` when dark (`data-theme="dark"` or `prefers-color-scheme: dark` without light override), and back to `logo-header.png` in light. Tab favicon remains `favicon.png` / `faviconSvg` regardless of theme.
 
 Do not leave favicon unset — the status page falls back to the Upptime icon SVG.
@@ -248,7 +264,7 @@ Mirrored in `status-website.css` for first-publish safety.
 ## Out of scope
 
 - Undocumented SCSS forks or hand-editing `gh-pages` as the primary fix
-- Regenerating Graphs CI PNGs inside `@upptime/graphs` (CSS filter is the supported path)
+- Regenerating Graphs CI PNGs inside `@upptime/graphs` as a required MVP step (prefer root Chart.js keys; never hue-filter whole Live cards)
 - UtilitySign monitor activation on this page
 - Invented logo URLs outside `assets/` + `status.devora.no`
 - Paid Statuspage / Digdir Atlassian subscribe features

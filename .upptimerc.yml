@@ -26,12 +26,16 @@ secrets:
 
 sites:
   - name: AgePass
+    # Pin historical slug so rename of display name does not orphan history/graphs.
+    slug: age-pass-produksjon
     url: https://agepass.devora.no/health
     expectedStatusCodes:
       - 200
     # Degraded if slower than 5s (Upptime default is 30s).
     maxResponseTime: 5000
   - name: Vipps Logg Inn
+    # Pin historical slug (pre-rename id) for history/graphs continuity.
+    slug: vipps-login-upstream-ikke-age-pass
     url: https://status.vippsmobilepay.com/api/v2/summary.json
     expectedStatusCodes:
       - 200
@@ -182,11 +186,13 @@ status-website:
       --submit-button-border-color: #242A56;
       --submit-button-background-color: #3432A6;
       --submit-button-color: #FFFFFF;
-      --graph-opacity: 0.95;
-      --graph-filter: hue-rotate(72deg) saturate(0.95) brightness(0.92);
     }
+    /* Do not hue-filter article.graph — shifts entire Live status cards. */
     section.live-status article {
       background-color: var(--card-background-color);
+    }
+    canvas {
+      filter: none !important;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -246,7 +252,7 @@ i18n:
   ms: ms
   loading: Laster
   navGitHub: GitHub
-  footer: Devora Status og driftsmeldingene er drevet av [Upptime](https://upptime.js.org)
+  footer: Devora Status og driftsmeldingene er drevet av [Upptime]($REPO)
   rateLimitExceededTitle: Hastighetsgrense overskredet
   rateLimitExceededIntro: Du har overskredet antallet forespørsler du kan gjøre på én time, så du må vente før du kan bruke nettstedet igjen. Alternativt kan du legge til en GitHub Personal Access Token for å fortsette.
   rateLimitExceededWhatDoesErrorMean: Hva betyr denne feilen?

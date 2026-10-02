@@ -1,72 +1,100 @@
-# Plan: Three visual adjustments — status.devora.no
+# Plan: Fix Live status card colors + restore graph/history continuity
 
-**Slice id:** `status-visual-legend-logo-livestatus-bg`  
+**Slice id:** `status-livestatus-color-graph-slug-fix`  
 **Execution mode:** `builder_plus_verifier`  
-**Rationale:** Targeted Svelte/CSS/Upptime theme + config changes with independent verify (incl. light/dark visual checks).  
-**Slice class:** `feature`  
+**Rationale:** Two coupled production regressions after rename + CSS filter; needs TDD + independent verify.  
+**Slice class:** `bugfix`  
 **No commit / no push** unless operator explicitly asks.
+
+## Root cause (investigated)
+
+### 1. Wrong Live status card colors (light cream / dark reddish)
+Live status rows are Upptime `<article class="graph">`. Theme CSS applies:
+
+```css
+article.graph { filter: var(--graph-filter); } /* hue-rotate(72deg) … */
+```
+
+That filter was meant to recolor teal PNG sparklines toward Devora purple, but it **hue-shifts the entire card** (background + text). Result: light cream/beige cards and dark reddish-brown cards — not `--card-background-color` `#FFFFFF` / `#1B2438`. Soft-error hex `#3F1D1D` is not the fill source here; the filter is.
+
+### 2. Graphs show a diagonal “triangle” / missing history
+Monitor **display names** were changed to `AgePass` / `Vipps Logg Inn`. Upptime derives **slugs from names** unless `slug` is set:
+
+| Display name (now) | Current slug | Historical assets still on disk |
+|--------------------|--------------|----------------------------------|
+| AgePass | `age-pass` | `history/age-pass-produksjon.yml`, `graphs/age-pass-produksjon/*` |
+| Vipps Logg Inn | `vipps-logg-inn` | `history/vipps-login-upstream-ikke-age-pass.yml`, `graphs/vipps-login-upstream-ikke-age-pass/*` |
+
+`history/summary.json` now points at the **new** slugs with essentially a single response-time sample → Chart.js / sparklines render as a diagonal fill. Historical data was **not deleted** by push; it was **orphaned** by slug change. UX updates must never rename sites without pinning `slug` or migrating history/graphs/api paths.
+
+Upptime supports explicit `sites[].slug` (documented custom slug) — use it to keep friendly names while preserving history paths.
 
 ## Task description
 
-Implement and verify three visual adjustments on the Devora public status page (`status.devora.no`), preserving Norwegian Bokmål UI copy and avoiding unrelated scope:
+1. **Stop hue-shifting Live status cards** — remove `filter`/`opacity` from `article.graph` (and mirrored `status-website.css`). Keep sparklines readable; rely on root `graphBorderColor` / `graphBackgroundColor` (`#3432A6` / `#968AB6`) for Graphs CI / Chart.js brand colors. Do not reintroduce banned fills `#3F1D1D` / `#FEE2E2`.
+2. **Restore history continuity** — keep display names `AgePass` and `Vipps Logg Inn`; set explicit:
+   - AgePass → `slug: age-pass-produksjon`
+   - Vipps Logg Inn → `slug: vipps-login-upstream-ikke-age-pass`
+3. **Document operator rule** in `DESIGN.md` and/or `docs/monitors.md`: never change monitor `name` without pinning `slug` or migrating `history/` + `graphs/` (+ `api/` if present); UX/CSS commits must not wipe history.
+4. **TDD** extend `scripts/validate-status-website-ux.sh` (fail first) for: no `filter:` on `article.graph`; both sites declare the pinned slugs; no banned fills.
 
-1. **Legend placement** — Move `aside.devora-status-legend.status-legend` («Forklaring av driftsstatus») from its current top/left injection into main content **directly below** `article.up` («Alle våre systemer fungerer normalt»).
-2. **Theme-dependent header logo** — Light theme: keep `logo-header.png` via `logoUrl`. Dark theme: use favicon asset `favicon.png` (`https://status.devora.no/favicon.png`) for visibility on dark nav/backgrounds.
-3. **Live status box backgrounds** — Match `article.up` / «Tidligere hendelser» card surfaces:
-   - Light: `#ffffff` (token `--card-background-color` / surface)
-   - Dark: prefer existing DESIGN token `#1B2438` (`--card-background-color`) over operator shorthand `#1b243` / `#1b2432` unless live page proves a different computed color is required — document decision in `build-result.md` / `DESIGN.md`
-   - Remove/replace incorrect soft-error fills `#3F1D1D` and `#FEE2E2` / `#fee2e2` where they paint Live status boxes (do not leave Live status reading as error-tinted soft red)
-
-Out of scope: commit/push, UtilitySign monitors, Digdir subscribe features, Graphs CI PNG regeneration, unrelated navbar/i18n edits.
+Out of scope: UtilitySign, renaming display titles again, force-push, deleting old history files.
 
 ## Acceptance criteria
 
-- [x] **AC1 — Legend below `article.up`:** After page load (and after theme toggle if present), `aside.devora-status-legend` (or `.status-legend`) is a sibling/following node directly under the operational banner `article.up` in main content — not stuck as a top/left orphan above the banner. Norwegian legend copy unchanged (Normal drift, Redusert funksjonalitet, Delvis utilgjengelig, Utilgjengelig, Vedlikehold).
-- [x] **AC2 — Theme logo swap:** In light mode, header logo `src` resolves to `logo-header.png`. In dark mode (`prefers-color-scheme: dark` and/or `data-theme="dark"`), header logo `src` resolves to `favicon.png`. Favicon tab icon remains `favicon.png` / `faviconSvg`. Default `logoUrl` in `.upptimerc.yml` stays light asset for first paint.
-- [x] **AC3 — Live status surfaces:** Live status boxes use the same surface as `article.up` / past-incident cards: light `#FFFFFF`, dark card token (preferred `#1B2438`). Theme CSS / mirrored `status-website.css` must not leave Live status boxes on `#FEE2E2` / `#3F1D1D`. Document token choice if `#1b2432` ≠ `#1B2438`.
-- [x] **AC4 — Validator / TDD:** `scripts/validate-status-website-ux.sh` extended (failing checks first) for legend reposition hook, dark-logo swap hook, and Live status bg constraints; script exits 0 after implementation.
-- [x] **AC5 — Docs:** `DESIGN.md` documents legend placement, theme-dependent logo, and Live status surface tokens (incl. `#1B2438` vs `#1b2432` note).
-- [x] **AC6 — No unrelated churn:** Sites remain AgePass + Vipps; NB i18n preserved; no commit/push.
+- [x] **AC1 — Card surfaces unfiltered:** Light/dark Live status cards use `--card-background-color` (`#FFFFFF` / `#1B2438`) without `filter` on `article.graph` / `section.live-status article`. No cream/reddish hue-shift; no `#3F1D1D` / `#FEE2E2`.
+- [x] **AC2 — Slug continuity:** `.upptimerc.yml` keeps names `AgePass` / `Vipps Logg Inn` and pins `slug: age-pass-produksjon` / `slug: vipps-login-upstream-ikke-age-pass`. Existing `history/*.yml` and `graphs/*` paths remain the canonical continuity keys.
+- [x] **AC3 — History not wiped:** No deletion of `history/` or `graphs/` historical assets; docs state the rename/slug policy.
+- [x] **AC4 — Validator TDD:** Fail-first asserts in `scripts/validate-status-website-ux.sh` for filter ban + pinned slugs; script exits 0 after fix.
+- [x] **AC5 — Docs:** `DESIGN.md` notes filter removal; `docs/monitors.md` lists slug + continuity warning.
 
 ## Implementation steps
 
-- [x] **0. TDD fail-first:** Extend `scripts/validate-status-website-ux.sh` with new asserts that fail on current tree (legend placement JS/CSS hook, dark logo → favicon, Live status not using `#FEE2E2`/`#3F1D1D` for card surfaces). Run once → expect FAIL.
-- [x] **1. Legend relocation:** Keep legend HTML in `customBodyHtml`. Add CSS/JS so after DOM ready the aside is moved to immediately follow `article.up` (or `article.down` / degraded banner if not all systems operational — prefer `main article.up, main article.down, main article.degraded` first status summary article). Preserve accessibility (`aria-label`). Use Context7 for any Svelte/DOM patterns only if touching generated page JS patterns; Upptime injection is config+CSS+`status-website.js`.
-- [x] **2. Theme logo:** Extend `status-website.js` to select nav logo `<img>` (Upptime header) and set `src` to `logo-header.png` (light) or `favicon.png` (dark); listen to `data-theme` changes + `matchMedia('(prefers-color-scheme: dark)')`. Keep `logoUrl` pointing at light asset for SSR/first paint.
-- [x] **3. Live status backgrounds:** Align Live status card/`article` backgrounds with `--card-background-color` (`#FFFFFF` / `#1B2438`). Replace incorrect uses of `--down-background-color: #FEE2E2` / `#3F1D1D` for Live status surfaces (update theme CSS + mirrored `status-website.css`; update DESIGN.md mapping). Prefer token `#1B2438` over inventing `#1b2432` unless evidence requires otherwise.
-- [x] **4. Docs + validator green:** Update `DESIGN.md`; re-run validator → PASS; note any Playwright visual check commands for verifier.
-- [x] **5. Write `build-result.md`** per `docs/reference/workflow-artifact-contract.md` (or repo equivalent) with Status, Acceptance Criteria rows, Linting/Type-Check, Closeout.
+- [x] **0. TDD fail-first:** Add validator checks that fail on current tree (article.graph filter present; missing pinned slugs).
+- [x] **1. CSS:** Remove `article.graph { filter; opacity }` from `assets/devora-status-theme.css` and mirrored `.upptimerc.yml` `status-website.css`. Keep `section.live-status article { background-color: var(--card-background-color) }` and canvas `filter: none`.
+- [x] **2. Config:** Add `slug:` pins under both sites; keep icon/URLs/names.
+- [x] **3. Docs:** Update DESIGN.md + monitors.md with slug continuity rule.
+- [x] **4. Validator green + `build-result.md`.**
+
+## Verification plan
+
+### Per-phase validation loops (loop until pass)
+
+| Phase | Command | Pass rule |
+|-------|---------|-----------|
+| Validator | `bash scripts/validate-status-website-ux.sh` | exit 0 |
+| Config | `bash scripts/validate-upptime-config.sh` | exit 0 |
+| History presence | `test -f history/age-pass-produksjon.yml && test -f history/vipps-login-upstream-ikke-age-pass.yml` | files exist |
+| Graphs presence | `test -d graphs/age-pass-produksjon && test -d graphs/vipps-login-upstream-ikke-age-pass` | dirs exist |
+
+### Global validation commands (before handoff)
+
+1. `bash scripts/validate-status-website-ux.sh`
+2. `bash scripts/validate-upptime-config.sh`
+3. Confirm `.upptimerc.yml` has both `slug:` pins and no `article.graph` filter in theme CSS / css mirror
+4. Prefer playwright-cli or curl evidence notes for verifier (live may lag until CI)
 
 ## Validation steps (verifier)
 
-- [x] Read-only: confirm AC1–AC6 against files + validator output.
-- [x] Prefer **playwright-cli** against live `https://status.devora.no` **and/or** local evidence of config/CSS/JS that will publish — note that live site may lag until Static Site CI; if live still shows old layout, verify **repo artifacts** prove the three changes and document live lag as non-blocking for this slice.
-- [x] Light + dark: logo src and Live status computed/background intent; legend position relative to `article.up`.
-- [x] Return structured verify payload (parent serializes `verify-result.md`).
+- [] Confirm AC1–AC5 against files + validator
+- [] Confirm history/graphs paths untouched (not deleted)
+- [] Note: after publish, Summary/Graphs CI should bind sparklines to pinned slugs again
 
 ## Expected output artifacts
 
 | Artifact | Owner |
 |----------|--------|
-| `docs/current-plan.md` | Parent (this file) |
+| `docs/current-plan.md` | Parent |
 | `build-result.md` | Builder |
-| `verify-result.md` | Parent (from verifier payload) |
-| Touched: `.upptimerc.yml`, `assets/devora-status-theme.css`, `scripts/validate-status-website-ux.sh`, `DESIGN.md` | Builder |
-
-## Token decision (plan default)
-
-| Operator note | Repo DESIGN today | Plan default |
-|---------------|-------------------|--------------|
-| Dark Live status `#1b243` / `#1b2432` | `--card-background-color: #1B2438` | **Use `#1B2438`** (existing token); document if visual QA wants `#1b2432` instead |
-| Remove `#3F1D1D`, `#fee2e2` from Live status boxes | `--down-background-color` soft error | Live status / card surfaces must not use those; adjust down soft fill mapping so Live status matches `article.up` / past incidents |
+| `verify-result.md` | Verifier / parent serialize |
+| Touched: `.upptimerc.yml`, `assets/devora-status-theme.css`, `scripts/validate-status-website-ux.sh`, `DESIGN.md`, `docs/monitors.md` | Builder |
 
 ## Rollback
 
-Revert `.upptimerc.yml` `js`/`css`/`customBodyHtml`, `assets/devora-status-theme.css`, validator extensions, and DESIGN.md notes for this slice.
+Revert CSS filter removal and slug pins; history files remain as before.
 
 ## Amendments
 
-- 2026-10-02T12:27:00Z — parent-orchestrator — Seeded substantive plan for three visual adjustments (legend below article.up, theme logo swap, Live status card surfaces); default dark token `#1B2438`; execution_mode builder_plus_verifier; no commit/push.
-- 2026-10-02T12:35:00Z — builder — Implemented slice: fail-first validator → PASS; legend relocate + theme logo JS in `.upptimerc.yml`; Live status `section.live-status article` + remapped `--down-background-color` to card surfaces (`#FFFFFF` / `#1B2438`); DESIGN.md docs; no commit/push.
-- 2026-10-02T12:40:00Z — parent-orchestrator — Verifier PASS AC1–AC6; serialized `verify-result.md`; synced plan AC/validation markers to `[x]`; live CI lag remains open advisory only.
-- 2026-10-02T12:45:00Z — parent (mat-sprint) — Replaced AgePass-focused `introTitle`/`introMessage` with company-wide driftsstatus copy; no other status-website fields; fold into same commit as visual slice.
+- 2026-10-02T13:15:00Z — parent-orchestrator — New slice: Live status color bug from article.graph hue-rotate; graph orphan from name→slug rename; fix via remove filter + pin historical slugs; TDD validator; no commit/push.
+- 2026-10-02T13:25:00Z — builder — Removed article.graph filter; pinned historical slugs; docs + validator green; build-result PASS.
+- 2026-10-02T13:30:00Z — parent-orchestrator — Verifier PASS AC1–AC5; serialized verify-result.md; awaiting operator commit/push for live republish.

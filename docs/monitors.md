@@ -4,11 +4,16 @@ Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen 
 
 **Aktiv på status.devora.no:** AgePass + Vipps. **UtilitySign:** deferred (se under). Ops-evidens: [S1 cron](operations/s1-actions-cron-evidence.md), [S2 drill](operations/s2-alert-drill-plan.md), [S4 UtilitySign](operations/s4-utilitysign-monitor-evidence.md); n8n: [`ops/n8n/README.md`](../ops/n8n/README.md).
 
+### Kontinuitet: `name` vs `slug`
+
+Upptime lager filstier under `history/` og `graphs/` fra **slug**. Uten eksplisitt `slug:` utledes slug fra `name`. **Endre aldri monitor-`name` uten å pinne `slug:` til historisk verdi, eller migrere `history/` + `graphs/` (+ `api/` om relevant).** UX/CSS-commits skal ikke slette historikk.
+
 ## AgePass
 
 | Felt | Verdi |
 |------|--------|
 | **Komponent** | AgePass |
+| **Slug (fast)** | `age-pass-produksjon` — pinnet i `.upptimerc.yml` slik at vennlig `name` ikke orphaner `history/` / `graphs/` |
 | **URL** | `GET https://agepass.devora.no/health` |
 | **Forventet HTTP** | `200` |
 | **Body (MVP)** | JSON med `status: healthy` når OK — **ikke** validert av Upptime i MVP; kun statuskode |
@@ -19,6 +24,7 @@ Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen 
 | Felt | Verdi |
 |------|--------|
 | **Komponent** | Vipps Logg Inn |
+| **Slug (fast)** | `vipps-login-upstream-ikke-age-pass` — historisk slug pinnet; ikke la rename til `vipps-logg-inn` orphanere historikk |
 | **Ikon** | `https://status.devora.no/vipps-logg-inn.png` (`assets/vipps-logg-inn.png`) |
 | **URL** | `GET https://status.vippsmobilepay.com/api/v2/summary.json` |
 | **Forventet HTTP** | `200` |
