@@ -25,6 +25,8 @@
   --submit-button-border-color: #242A56;
   --submit-button-background-color: #3432A6;
   --submit-button-color: #FFFFFF;
+  /* Charts: prefer root graphBorderColor/graphBackgroundColor in .upptimerc.yml.
+   * Keep filter neutral so Chart.js Devora colors are not hue-shifted. */
   --graph-opacity: 1;
   --graph-filter: none;
 }
