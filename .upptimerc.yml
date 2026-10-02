@@ -25,7 +25,7 @@ secrets:
   - NOTIFICATION_SLACK_WEBHOOK_URL
 
 sites:
-  - name: AgePass (produksjon)
+  - name: AgePass
     url: https://agepass.devora.no/health
     expectedStatusCodes:
       - 200
@@ -41,11 +41,10 @@ sites:
 status-website:
   cname: status.devora.no
   name: Devora status
-  introTitle: "**Devora** — offentlig driftsstatus for selskapets tjenester."
+  introTitle: "**Devora** — driftsstatus"
   introMessage: |
-    Denne siden viser tilgjengelighet for AgePass og relaterte avhengigheter.
-    Data kommer fra automatiske sjekker. Vipps-raden viser **tredjeparts** status —
-    rød Vipps betyr ikke automatisk at AgePass er nede.
+    Denne siden viser tilgjengelighet for Devoras tjenester og overvåkede avhengigheter, basert på automatiske sjekker.
+    Ved kjente forstyrrelser eller planlagte endringer som kan påvirke brukerne, publiserer vi også driftsmeldinger her.
   allSitesOperational: Alle våre systemer fungerer normalt
   notAllSitesOperational: Ikke alle systemer fungerer normalt
   # Favicons: assets/* are copied to site root by Static Site CI (served as-is).
@@ -72,12 +71,14 @@ status-website:
       </ul>
       <p class="devora-status-legend__note">Upptime viser oppe / degradert / nede (+ planlagt vedlikehold). «Delvis utilgjengelig» er Digdir-inspirert forklaring og tilsvarer nærmest degradert / delvis påvirkning — ikke en egen live-tilstand.</p>
     </aside>
-  # Optional light/dark toggle (prefers-color-scheme remains primary).
+  # Theme toggle + legend relocate below article.up + theme-dependent nav logo.
   js: |
     (function () {
       try {
         var root = document.documentElement;
         var key = "devora-status-theme";
+        var LOGO_LIGHT = "https://status.devora.no/logo-header.png";
+        var LOGO_DARK = "https://status.devora.no/favicon.png";
         var stored = localStorage.getItem(key);
         if (stored === "light" || stored === "dark") {
           root.setAttribute("data-theme", stored);
@@ -87,6 +88,28 @@ status-website:
           if (cur === "dark") return "Lys modus";
           if (cur === "light") return "Mørk modus";
           return "Tema";
+        }
+        function isDark() {
+          var cur = root.getAttribute("data-theme");
+          if (cur === "dark") return true;
+          if (cur === "light") return false;
+          return window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+        function findNavLogo() {
+          return document.querySelector("nav img, header img, a[href='/'] img, .navbar img");
+        }
+        function syncLogo() {
+          var img = findNavLogo();
+          if (!img) return;
+          img.src = isDark() ? LOGO_DARK : LOGO_LIGHT;
+        }
+        function relocateLegend() {
+          var legend = document.querySelector("aside.devora-status-legend, aside.status-legend, .devora-status-legend");
+          if (!legend) return;
+          var banner = document.querySelector("main article.up, main article.down, main article.degraded, article.up, article.down, article.degraded");
+          if (!banner || !banner.parentNode) return;
+          if (legend.previousElementSibling === banner) return;
+          banner.insertAdjacentElement("afterend", legend);
         }
         function ensureBtn() {
           var btn = document.getElementById("devora-theme-toggle");
@@ -105,17 +128,32 @@ status-website:
             root.setAttribute("data-theme", next);
             localStorage.setItem(key, next);
             btn.textContent = label();
+            syncLogo();
           });
           document.body.appendChild(btn);
           return btn;
         }
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", function () {
-            ensureBtn().textContent = label();
-          });
-        } else {
-          ensureBtn().textContent = label();
+        function onReady(fn) {
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", fn);
+          } else {
+            fn();
+          }
         }
+        onReady(function () {
+          ensureBtn().textContent = label();
+          relocateLegend();
+          syncLogo();
+          if (typeof MutationObserver !== "undefined") {
+            new MutationObserver(function () { syncLogo(); }).observe(root, {
+              attributes: true,
+              attributeFilter: ["data-theme"]
+            });
+          }
+          var mq = window.matchMedia("(prefers-color-scheme: dark)");
+          if (mq.addEventListener) mq.addEventListener("change", syncLogo);
+          else if (mq.addListener) mq.addListener(syncLogo);
+        });
       } catch (e) { /* ignore */ }
     })();
   css: |
@@ -128,7 +166,7 @@ status-website:
       --nav-current-border-bottom-color: #3432A6;
       --card-border-color: #E8E6F5;
       --down-border-left-color: #EF4444;
-      --down-background-color: #FEE2E2;
+      --down-background-color: #FFFFFF;
       --degraded-border-left-color: #F59E0B;
       --up-border-left-color: #22C55E;
       --tag-color: #FFFFFF;
@@ -145,6 +183,9 @@ status-website:
       --graph-opacity: 0.95;
       --graph-filter: hue-rotate(72deg) saturate(0.95) brightness(0.92);
     }
+    section.live-status article {
+      background-color: var(--card-background-color);
+    }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
         --body-background-color: #12182A;
@@ -154,7 +195,7 @@ status-website:
         --nav-border-bottom-color: #2F3A5C;
         --nav-current-border-bottom-color: #968AB6;
         --card-border-color: #2F3A5C;
-        --down-background-color: #3F1D1D;
+        --down-background-color: #1B2438;
       }
     }
     :root[data-theme="dark"] {
@@ -165,7 +206,7 @@ status-website:
       --nav-border-bottom-color: #2F3A5C;
       --nav-current-border-bottom-color: #968AB6;
       --card-border-color: #2F3A5C;
-      --down-background-color: #3F1D1D;
+      --down-background-color: #1B2438;
     }
   navbar:
     - title: Status

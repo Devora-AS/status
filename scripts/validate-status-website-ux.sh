@@ -295,4 +295,129 @@ PY
   fi
 fi
 
+# --- Slice status-visual-legend-logo-livestatus-bg ---
+# Extract status-website.js block for legend relocate + theme logo swap hooks.
+js_block="$(
+  awk '
+    /^status-website:/ { in_sw=1; next }
+    in_sw && /^[^[:space:]#]/ { in_sw=0; in_js=0 }
+    in_sw && /^  [a-zA-Z0-9_-]+:/ {
+      if ($0 ~ /^  js:/) { in_js=1; next }
+      if (in_js) { in_js=0 }
+    }
+    in_js { print }
+  ' "$CONFIG"
+)"
+if [[ -z "$js_block" ]]; then
+  fail "status-website.js block required for legend relocate + theme logo swap"
+fi
+
+# AC1: legend reposition hook — move aside after operational banner article
+if ! echo "$js_block" | grep -qE 'devora-status-legend|status-legend'; then
+  fail "status-website.js must reference legend selector (devora-status-legend / status-legend)"
+fi
+if ! echo "$js_block" | grep -qE 'article\.(up|down|degraded)|querySelector[^;]*article'; then
+  fail "status-website.js must locate status summary article (article.up / .down / .degraded)"
+fi
+if ! echo "$js_block" | grep -qE 'insertAdjacentElement|insertBefore|after\(|nextSibling|parentNode\.insertBefore'; then
+  fail "status-website.js must relocate legend DOM node after status summary article"
+fi
+
+# AC2: theme-dependent header logo — dark → favicon.png; light → logo-header.png
+if ! echo "$js_block" | grep -qE 'favicon\.png'; then
+  fail "status-website.js must swap dark-theme header logo to favicon.png"
+fi
+if ! echo "$js_block" | grep -qE 'logo-header\.png'; then
+  fail "status-website.js must restore light-theme header logo to logo-header.png"
+fi
+if ! echo "$js_block" | grep -qE 'prefers-color-scheme|matchMedia'; then
+  fail "status-website.js must listen to prefers-color-scheme / matchMedia for logo swap"
+fi
+if ! echo "$js_block" | grep -qE 'data-theme|MutationObserver|getAttribute\([\"'\'']data-theme'; then
+  fail "status-website.js must react to data-theme for logo swap"
+fi
+# Default logoUrl stays light asset for first paint
+if ! grep -qE 'logoUrl:[[:space:]]*https://status\.devora\.no/logo-header\.png' "$CONFIG"; then
+  fail "logoUrl must remain logo-header.png for SSR/first paint"
+fi
+
+# AC3: Live status card surfaces — card token, not soft-error fills
+# Prefer explicit section.live-status article rule using --card-background-color
+if ! grep -qE 'section\.live-status|live-status' "$THEME_CSS"; then
+  fail "theme CSS must target section.live-status (Live status card surfaces)"
+fi
+if ! python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+# Must have a rule that styles live-status articles with card background
+if not re.search(
+    r"section\.live-status[^{]*\{[^}]*background(?:-color)?\s*:\s*var\(--card-background-color\)",
+    css,
+    re.S | re.I,
+):
+    sys.exit(1)
+sys.exit(0)
+PY
+then
+  fail "theme CSS must set section.live-status article background to var(--card-background-color)"
+fi
+# Soft-error fills must not paint Live status boxes:
+# --down-background-color on Live status path must be card surface, OR live-status
+# override exists (checked above). Also reject assigning FEE2E2/3F1D1D inside live-status rules.
+if python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+for m in re.finditer(r"section\.live-status[^{]*\{([^}]*)\}", css, re.S | re.I):
+    block = m.group(1)
+    if re.search(r"#FEE2E2|#fee2e2|#3F1D1D|#3f1d1d", block):
+        sys.exit(0)  # found bad fill in live-status rule → fail below
+sys.exit(1)
+PY
+then
+  fail "section.live-status rules must not use soft-error fills #FEE2E2 / #3F1D1D"
+fi
+# Remap --down-background-color away from soft-error for card-like surfaces:
+# either equals #FFFFFF/#1B2438, or live-status override (already required) + DESIGN note.
+# Still require card token #1B2438 (not #1b2432) in dark palette.
+if ! grep -qiE -- '--card-background-color:[[:space:]]*#1B2438' "$THEME_CSS"; then
+  fail "dark --card-background-color must be DESIGN token #1B2438 (not #1b2432)"
+fi
+# Mirrored status-website.css should not leave Live status on soft-error either
+if grep -qE '^[[:space:]]+css:' "$CONFIG"; then
+  if ! grep -qE 'section\.live-status|--card-background-color:[[:space:]]*#1B2438' "$CONFIG"; then
+    fail "status-website.css mirror must include live-status card surface and/or #1B2438 card token"
+  fi
+  # Prefer mirrored live-status rule when css block is present
+  if ! python3 - "$CONFIG" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+# Extract css: | block (YAML literal)
+m = re.search(r"(?m)^  css:\s*\|\s*\n((?:(?: {4}|\t).*\n)+)", text)
+if not m:
+    sys.exit(1)
+css = m.group(1)
+if re.search(
+    r"section\.live-status[^{]*\{[^}]*background(?:-color)?\s*:\s*var\(--card-background-color\)",
+    css,
+    re.S | re.I,
+):
+    sys.exit(0)
+# Fallback: down-background remapped to card surfaces in both light and dark
+light_ok = bool(re.search(r"--down-background-color:\s*#FFFFFF", css, re.I))
+dark_ok = bool(re.search(r"--down-background-color:\s*#1B2438", css, re.I))
+sys.exit(0 if (light_ok and dark_ok) else 1)
+PY
+  then
+    fail "status-website.css must mirror Live status card surfaces (section.live-status or remapped --down-background-color)"
+  fi
+fi
+
+# AC5: DESIGN.md documents legend placement, theme logo, Live status surfaces + #1B2438 vs #1b2432
+grep -qiE 'legend.*(below|under|after)|article\.up|relocat' "$DESIGN" || \
+  fail "DESIGN.md must document legend placement below article.up"
+grep -qiE 'favicon\.png|theme.?dependent|dark.*logo|logo.*dark' "$DESIGN" || \
+  fail "DESIGN.md must document theme-dependent header logo (dark → favicon.png)"
+grep -qiE 'live.?status|#1B2438|#1b2432|card-background-color' "$DESIGN" || \
+  fail "DESIGN.md must document Live status surfaces and #1B2438 token decision"
+
 pass

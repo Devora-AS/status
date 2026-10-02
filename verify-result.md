@@ -3,31 +3,29 @@
 ## Status
 PASS
 
-## Plan
-docs/current-plan.md
-
-## Builder result
-build-result.md
+## Task
+Three visual adjustments — legend below `article.up`, theme-dependent header logo, Live status card surfaces (`status-visual-legend-logo-livestatus-bg`)
 
 ## Acceptance Criteria
 
-| Criterion | Result | Evidence |
-|-----------|--------|----------|
-| AC1 — Digdir-style NB operational copy | PASS | `.upptimerc.yml`: `allSitesOperational` / `i18n.allSystemsOperational` = «Alle våre systemer fungerer normalt»; `notAllSitesOperational` = «Ikke alle systemer fungerer normalt» |
-| AC2 — Digdir-inspired five-row status legend | PASS | `customBodyHtml` legend (Normal drift / Redusert funksjonalitet / Delvis utilgjengelig / Utilgjengelig / Vedlikehold); theme CSS light+dark styles |
-| AC3 — logoUrl → cropped light-bg logo-header.png | PASS | `assets/logo-header.png` 87×81 RGBA; `logoUrl: https://status.devora.no/logo-header.png`; favicon remains dark-bg (documented) |
-| AC4 — LiveStatus graph recolor + Chart.js keys | PASS | `--graph-filter` + `article.graph`; root `graphBorderColor`/`graphBackgroundColor` remain `#3432A6` / `#968AB6` |
-| AC5 — Light + dark palettes + color-scheme | PASS | `:root` + `@media (prefers-color-scheme: dark)` + `[data-theme]`; meta `color-scheme: light dark`; optional js toggle |
-| AC6 — DESIGN.md documentation | PASS | Digdir mapping, logo/favicon split, PNG vs Chart.js, light/dark, deferred UX |
-| AC7 — validate-status-website-ux.sh | PASS | Independent run exit 0 |
-| AC8 — Scope constraints | PASS | AgePass+Vipps only; no GitHub navbar; no UtilitySign; no builder commit/push |
+| ID | Result | Evidence |
+|----|--------|----------|
+| AC1 — Legend below `article.up` | PASS | `.upptimerc.yml` `relocateLegend()` uses `insertAdjacentElement('afterend', …)` after `main article.up\|down\|degraded`; NB legend labels unchanged in `customBodyHtml`. Live lag until Static Site CI (non-blocking). |
+| AC2 — Theme logo swap | PASS | Light `logo-header.png` / dark `favicon.png` via `syncLogo()` + `data-theme` / `prefers-color-scheme`; `logoUrl` remains light first-paint; favicon hooks unchanged. |
+| AC3 — Live status surfaces | PASS | `section.live-status article { background-color: var(--card-background-color) }`; light `#FFFFFF` / dark `#1B2438`; soft-error `#FEE2E2` / `#3F1D1D` removed from `--down-background-color`. Token decision: `#1B2438` (not `#1b2432`). |
+| AC4 — Validator / TDD | PASS | `scripts/validate-status-website-ux.sh` asserts legend relocate, dark logo, live-status surfaces, DESIGN docs; exit 0. |
+| AC5 — Docs | PASS | `DESIGN.md` documents legend placement, theme logo, Live status surfaces, `#1B2438` vs `#1b2432`. |
+| AC6 — No unrelated churn | PASS | AgePass + Vipps only; NB i18n preserved; no commit/push; scoped dirty files. |
 
-## Issues
-None
+## Linting / Type-Check
+PASS — `bash scripts/validate-status-website-ux.sh` → `validate-status-website-ux: PASS`
+
+## Issues / Blockers
+None blocking. Live `https://status.devora.no` still shows pre-slice layout (legend orphan, dark logo still `logo-header.png`, live `--down-background-color` still soft-error) until Static Site CI publishes — repo artifacts are authoritative for this slice.
 
 ## Recommendations
-- After Static Site CI publish: visually confirm LiveStatus sparklines read purple (not teal) and Vipps icons are not hue-shifted.
-- Commit/push remains operator-owned.
+- After publish: re-check live legend `previousElementSibling === article.up`, dark nav logo ends with `favicon.png`, card surfaces `#FFFFFF` / `#1B2438`.
+- Advisory: plan AC checklist markers may need parent sync to `[x]` on closeout (warn-not-fail).
 
-## Closeout
-2026-10-02 — Independent file inspection + UX validator exit 0 confirm builder PASS for slice `status-digdir-ux-logo-graph-theme`. Overall Status PASS.
+## Closeout (2026-10-02T12:40:00Z)
+Verifier structured payload PASS for AC1–AC6. Parent serialized this handoff. Scope audit script N/A in this repo. Trace run_id: `status-visual-legend-logo-livestatus-bg-20261002T1228Z`.
