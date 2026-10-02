@@ -4,6 +4,16 @@
 owner: Devora-AS
 repo: status
 
+# GitHub API User-Agent (Upptime docs recommend a GitHub username).
+user-agent: Christian-Devora
+
+# Assign downtime Issues to the Devora operator.
+assignees:
+  - Christian-Devora
+
+# Keep short-lived incidents in history (do not auto-delete Issues open < 15 minutes).
+skipDeleteIssues: true
+
 # Chart.js colors on status page (Graph.svelte reads these from root config.json).
 # Defaults are Upptime teal (#1abc9c / #89e0cf) — override with DESIGN.md tokens.
 graphBorderColor: "#3432A6"
@@ -19,10 +29,14 @@ sites:
     url: https://agepass.devora.no/health
     expectedStatusCodes:
       - 200
+    # Degraded if slower than 5s (Upptime default is 30s).
+    maxResponseTime: 5000
   - name: Vipps Login (upstream — ikke AgePass)
     url: https://status.vippsmobilepay.com/api/v2/summary.json
     expectedStatusCodes:
       - 200
+    # Upstream third-party; slightly looser than AgePass.
+    maxResponseTime: 10000
 
 status-website:
   cname: status.devora.no
