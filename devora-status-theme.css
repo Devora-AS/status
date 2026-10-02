@@ -17,7 +17,8 @@
   --nav-current-border-bottom-color: #3432A6;
   --card-border-color: #E8E6F5;
   --down-border-left-color: #EF4444;
-  --down-background-color: #FEE2E2;
+  /* Card surface (not soft-error) — Live status + article cards match article.up */
+  --down-background-color: #FFFFFF;
   --degraded-border-left-color: #F59E0B;
   --up-border-left-color: #22C55E;
   --tag-color: #FFFFFF;
@@ -64,7 +65,7 @@
     --nav-border-bottom-color: #2F3A5C;
     --nav-current-border-bottom-color: #968AB6;
     --card-border-color: #2F3A5C;
-    --down-background-color: #3F1D1D;
+    --down-background-color: #1B2438;
     --error-button-border-color: #968AB6;
     --submit-button-border-color: #968AB6;
     --legend-muted: #A8A3C4;
@@ -87,7 +88,7 @@
   --nav-border-bottom-color: #2F3A5C;
   --nav-current-border-bottom-color: #968AB6;
   --card-border-color: #2F3A5C;
-  --down-background-color: #3F1D1D;
+  --down-background-color: #1B2438;
   --error-button-border-color: #968AB6;
   --submit-button-border-color: #968AB6;
   --legend-muted: #A8A3C4;
@@ -112,6 +113,15 @@ article.graph {
   opacity: var(--graph-opacity);
 }
 
+/*
+ * Live status monitor cards — same surface as article.up / past-incident cards.
+ * Do not paint Live status with banned soft-error fills (#FEE2E2 / #3F1D1D — not Devora brand).
+ * Dark card token is DESIGN #1B2438 (not operator shorthand #1b2432).
+ */
+section.live-status article {
+  background-color: var(--card-background-color);
+}
+
 /* Do not hue-shift Chart.js canvases on detail pages */
 section article canvas,
 .container canvas,
@@ -119,7 +129,10 @@ canvas {
   filter: none !important;
 }
 
-/* Digdir-like legend surface (customBodyHtml) */
+/* Digdir-like legend surface (customBodyHtml).
+ * Injected via customBodyHtml; status-website.js relocates aside to sit
+ * directly below main article.up / .down / .degraded after DOM ready.
+ */
 .status-banner-hint,
 .devora-status-legend {
   background: var(--banner-surface);
