@@ -246,7 +246,7 @@ i18n:
   ms: ms
   loading: Laster
   navGitHub: GitHub
-  footer: Denne siden er [åpen kildekode]($REPO), drevet av [Upptime](https://upptime.js.org)
+  footer: Devora Status og driftsmeldingene er drevet av [Upptime](https://upptime.js.org)
   rateLimitExceededTitle: Hastighetsgrense overskredet
   rateLimitExceededIntro: Du har overskredet antallet forespørsler du kan gjøre på én time, så du må vente før du kan bruke nettstedet igjen. Alternativt kan du legge til en GitHub Personal Access Token for å fortsette.
   rateLimitExceededWhatDoesErrorMean: Hva betyr denne feilen?
