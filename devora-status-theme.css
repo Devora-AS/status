@@ -43,15 +43,6 @@
   --legend-border: #E8E6F5;
   --banner-surface: #FFFFFF;
   --banner-border: #E8E6F5;
-
-  /*
-   * LiveStatus sparklines are Graphs CI PNGs (hardcoded teal #1abc9c / #89e0cf).
-   * Chart.js Graph.svelte uses root graphBorderColor/graphBackgroundColor instead.
-   * Hue-rotate teal (~174°) toward primary purple (~241°) ≈ +70deg.
-   * Applied only to article.graph (not article .graph) so icons/canvas stay clean.
-   */
-  --graph-opacity: 0.95;
-  --graph-filter: hue-rotate(72deg) saturate(0.95) brightness(0.92);
 }
 
 /* Dark palette — OS preference */
@@ -73,8 +64,6 @@
     --legend-border: #2F3A5C;
     --banner-surface: #1B2438;
     --banner-border: #2F3A5C;
-    --graph-opacity: 0.9;
-    --graph-filter: hue-rotate(72deg) saturate(0.85) brightness(1.05);
   }
 }
 
@@ -96,8 +85,6 @@
   --legend-border: #2F3A5C;
   --banner-surface: #1B2438;
   --banner-border: #2F3A5C;
-  --graph-opacity: 0.9;
-  --graph-filter: hue-rotate(72deg) saturate(0.85) brightness(1.05);
 }
 
 :root[data-theme="light"] {
@@ -105,13 +92,10 @@
 }
 
 /*
- * LiveStatus.svelte renders <article class="graph"> with PNG background-image.
- * Stock Upptime global.css uses `article .graph` (descendant) which does NOT match.
+ * Do NOT apply filter/opacity on article.graph — LiveStatus uses <article class="graph">
+ * for whole cards; hue-rotate shifts card background + text (cream/reddish), not just PNG sparklines.
+ * Brand Chart.js / Graphs CI via root graphBorderColor / graphBackgroundColor instead.
  */
-article.graph {
-  filter: var(--graph-filter);
-  opacity: var(--graph-opacity);
-}
 
 /*
  * Live status monitor cards — same surface as article.up / past-incident cards.
