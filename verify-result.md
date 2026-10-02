@@ -3,35 +3,31 @@
 ## Status
 PASS
 
-## Task
-status-nb-brand-nav — remove GitHub navbar, NB i18n, DESIGN.md + verified Upptime theme
+## Plan
+docs/current-plan.md
 
-## Trace
-`status-nb-brand-nav-20261001T1255Z`
+## Builder result
+build-result.md
 
-## Criteria
+## Acceptance Criteria
 
-| ID | Result | Evidence |
-|----|--------|----------|
-| AC1 | PASS | `.upptimerc.yml` navbar Status + `devora.no` only; no `github.com` in config; `validate-status-website-ux.sh` PASS |
-| AC2 | PASS | Root `DESIGN.md` YAML front matter + prose; maps `#F8F7FF`/`#3432A6`/`#242A56` to Upptime CSS vars |
-| AC3 | PASS | Top-level `i18n:` (~61 keys), `locale: nb-NO`, æ/ø/å present; placeholders preserved; operational messages NB |
-| AC4 | PASS | `themeUrl` → `assets/devora-status-theme.css` + inline `css` `:root` + `theme-color: #3432A6` (documented hooks) |
-| AC5 | PASS | Both validators exit 0; sites AgePass + Vipps only |
-| AC6 | PASS | Playwright live baseline shows lag (GitHub/English/teal); local config GREEN; no commit/push |
-| AC7 | PASS | No speculative SCSS/gh-pages forks; no UtilitySign/DRILL |
-
-## Linting / Type-Check
-PASS — `validate-status-website-ux.sh`, `validate-upptime-config.sh`, `bash -n` on new script
-
-## Scope
-PASS — changes limited to DESIGN.md, `.upptimerc.yml`, `assets/devora-status-theme.css`, `scripts/validate-status-website-ux.sh`, plan/build handoffs; `scripts/mat-scope-audit.py` absent in repo (manual scope check)
+| Criterion | Result | Evidence |
+|-----------|--------|----------|
+| AC1 — Digdir-style NB operational copy | PASS | `.upptimerc.yml`: `allSitesOperational` / `i18n.allSystemsOperational` = «Alle våre systemer fungerer normalt»; `notAllSitesOperational` = «Ikke alle systemer fungerer normalt» |
+| AC2 — Digdir-inspired five-row status legend | PASS | `customBodyHtml` legend (Normal drift / Redusert funksjonalitet / Delvis utilgjengelig / Utilgjengelig / Vedlikehold); theme CSS light+dark styles |
+| AC3 — logoUrl → cropped light-bg logo-header.png | PASS | `assets/logo-header.png` 87×81 RGBA; `logoUrl: https://status.devora.no/logo-header.png`; favicon remains dark-bg (documented) |
+| AC4 — LiveStatus graph recolor + Chart.js keys | PASS | `--graph-filter` + `article.graph`; root `graphBorderColor`/`graphBackgroundColor` remain `#3432A6` / `#968AB6` |
+| AC5 — Light + dark palettes + color-scheme | PASS | `:root` + `@media (prefers-color-scheme: dark)` + `[data-theme]`; meta `color-scheme: light dark`; optional js toggle |
+| AC6 — DESIGN.md documentation | PASS | Digdir mapping, logo/favicon split, PNG vs Chart.js, light/dark, deferred UX |
+| AC7 — validate-status-website-ux.sh | PASS | Independent run exit 0 |
+| AC8 — Scope constraints | PASS | AgePass+Vipps only; no GitHub navbar; no UtilitySign; no builder commit/push |
 
 ## Issues
-None for local/config scope.
+None
 
 ## Recommendations
-Operator push + Upptime site workflow required before live `status.devora.no` reflects AC1–AC4.
+- After Static Site CI publish: visually confirm LiveStatus sparklines read purple (not teal) and Vipps icons are not hue-shifted.
+- Commit/push remains operator-owned.
 
-## Closeout (2026-10-01)
-Verifier structured payload PASS for AC1–AC7; parent serialized this file. Live deploy lag documented honestly.
+## Closeout
+2026-10-02 — Independent file inspection + UX validator exit 0 confirm builder PASS for slice `status-digdir-ux-logo-graph-theme`. Overall Status PASS.

@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Validates Devora status-website UX: no GitHub navbar, DESIGN.md, NB i18n, theme asset.
-# Run from repo root. TDD gate for status-nb-brand-nav slice.
+# Validates Devora status-website UX: Digdir copy/legend, logo, graph filter, light/dark, no GitHub navbar.
+# Run from repo root. TDD gate for status-digdir-ux-logo-graph-theme slice.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="${ROOT}/.upptimerc.yml"
 DESIGN="${ROOT}/DESIGN.md"
 THEME_CSS="${ROOT}/assets/devora-status-theme.css"
+LOGO_HEADER="${ROOT}/assets/logo-header.png"
 
 fail() {
   echo "validate-status-website-ux: FAIL — $*" >&2
@@ -57,6 +58,15 @@ grep -qE '^---[[:space:]]*$' "$DESIGN" || fail "DESIGN.md missing YAML front mat
 grep -qiE 'primary|3432A6' "$DESIGN" || fail "DESIGN.md must document primary token #3432A6"
 grep -qiE 'body-background-color|nav-current-border-bottom-color' "$DESIGN" || \
   fail "DESIGN.md must map tokens to Upptime CSS variables (e.g. --body-background-color)"
+
+# Digdir UX / logo / graph / light-dark documentation (slice status-digdir-ux-logo-graph-theme)
+grep -qiE 'logo-header|logoUrl' "$DESIGN" || fail "DESIGN.md must document logo-header / logoUrl"
+grep -qiE 'graph-filter|article\.graph|LiveStatus|Graphs CI|PNG' "$DESIGN" || \
+  fail "DESIGN.md must document live PNG graph filter vs Chart.js keys"
+grep -qiE 'prefers-color-scheme|light.?dark|data-theme' "$DESIGN" || \
+  fail "DESIGN.md must document light/dark theme architecture"
+grep -qiE 'Normal drift|Digdir|legend' "$DESIGN" || \
+  fail "DESIGN.md must document Digdir-inspired status legend mapping"
 
 # --- AC3: top-level i18n NB with placeholders + æ/ø/å ---
 grep -qE '^i18n:' "$CONFIG" || fail "missing top-level i18n: block"
@@ -119,6 +129,40 @@ fi
 grep -qE 'allSitesOperational:' "$CONFIG" || fail "missing status-website.allSitesOperational"
 grep -qE 'notAllSitesOperational:' "$CONFIG" || fail "missing status-website.notAllSitesOperational"
 
+# Digdir-style operational copy (AC1)
+if ! grep -qE 'allSitesOperational:[[:space:]]*Alle våre systemer fungerer normalt' "$CONFIG"; then
+  fail "allSitesOperational must be Digdir-style NB: Alle våre systemer fungerer normalt"
+fi
+if ! grep -qE 'allSystemsOperational:[[:space:]]*Alle våre systemer fungerer normalt' "$CONFIG"; then
+  fail "i18n.allSystemsOperational must match Digdir-style NB: Alle våre systemer fungerer normalt"
+fi
+# notAllSitesOperational: NB, no English leftovers
+if ! grep -qiE 'notAllSitesOperational:[[:space:]]*.*[æøåÆØÅ]' "$CONFIG"; then
+  # allow NB without æøå if clearly Norwegian wording
+  if ! grep -qE 'notAllSitesOperational:[[:space:]]*(En eller flere|Ikke alle|Noen tjenester|Systemene våre)' "$CONFIG"; then
+    fail "notAllSitesOperational must be Norwegian Bokmål (no English leftovers)"
+  fi
+fi
+if grep -qiE 'notAllSitesOperational:[[:space:]]*.*\b(not all|unavailable|systems? are)\b' "$CONFIG"; then
+  fail "notAllSitesOperational must not contain English leftovers"
+fi
+
+# Status legend via customBodyHtml (AC2)
+if ! grep -qE 'customBodyHtml:' "$CONFIG"; then
+  fail "status-website.customBodyHtml required for Digdir-inspired status legend"
+fi
+for label in "Normal drift" "Redusert funksjonalitet" "Delvis utilgjengelig" "Utilgjengelig" "Vedlikehold"; do
+  if ! grep -qF "$label" "$CONFIG"; then
+    fail "customBodyHtml legend missing Digdir-inspired label: ${label}"
+  fi
+done
+if ! grep -qE 'status-legend|devora-status-legend' "$CONFIG"; then
+  fail "customBodyHtml must include a status-legend / devora-status-legend class hook"
+fi
+if ! grep -qE '\.status-legend|\.devora-status-legend' "$THEME_CSS"; then
+  fail "theme CSS must style .status-legend or .devora-status-legend"
+fi
+
 # --- AC4: theme asset + themeUrl and/or css + metaTags theme-color ---
 [[ -f "$THEME_CSS" ]] || fail "assets/devora-status-theme.css missing"
 grep -qE -- '--body-background-color:' "$THEME_CSS" || fail "theme CSS missing --body-background-color"
@@ -159,6 +203,48 @@ if grep -qiE 'graphBorderColor:.*#1abc9c|graphBackgroundColor:.*#89e0cf' "$CONFI
   fail "graph colors must not use Upptime teal defaults (#1abc9c / #89e0cf)"
 fi
 
+# LiveStatus PNG graph filter (AC4) — stock article .graph misses article.graph
+if ! grep -qE 'article\.graph' "$THEME_CSS"; then
+  fail "theme CSS must include explicit article.graph rule (LiveStatus PNG backgrounds)"
+fi
+# --graph-filter must not be none (or article.graph must apply a non-none filter)
+if grep -qE -- '--graph-filter:[[:space:]]*none' "$THEME_CSS"; then
+  # allow none only if article.graph sets a concrete filter not via the none var
+  if ! grep -qE 'article\.graph[[:space:]]*\{[^}]*filter:[^;]*(hue-rotate|saturate|sepia)' "$THEME_CSS"; then
+    # multiline-friendly: require --graph-filter assigned to something other than none somewhere
+    if ! python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+# Find --graph-filter declarations that are not none
+vals = re.findall(r"--graph-filter\s*:\s*([^;]+);", css)
+non_none = [v.strip() for v in vals if v.strip().lower() != "none"]
+if not non_none:
+    sys.exit(1)
+# Prefer article.graph using the var or a filter
+if not re.search(r"article\.graph\s*\{[^}]*filter\s*:", css, re.S):
+    sys.exit(1)
+sys.exit(0)
+PY
+    then
+      fail "--graph-filter must recolor teal Graphs CI PNGs (not none); article.graph must apply filter"
+    fi
+  fi
+else
+  # Ensure a non-none --graph-filter exists
+  if ! grep -qE -- '--graph-filter:[[:space:]]*(?!none)' "$THEME_CSS" 2>/dev/null; then
+    if ! python3 - "$THEME_CSS" <<'PY'
+import re, sys
+css = open(sys.argv[1], encoding="utf-8").read()
+vals = re.findall(r"--graph-filter\s*:\s*([^;]+);", css)
+non_none = [v.strip() for v in vals if v.strip().lower() != "none"]
+sys.exit(0 if non_none else 1)
+PY
+    then
+      fail "theme CSS must set --graph-filter to a non-none recolor (hue-rotate/saturate/…)"
+    fi
+  fi
+fi
+
 # --- AC6: Devora favicon via documented status-website.favicon / faviconSvg + assets ---
 FAVICON_PNG="${ROOT}/assets/favicon.png"
 [[ -f "$FAVICON_PNG" ]] || fail "assets/favicon.png missing (Devora mark for status favicon)"
@@ -173,5 +259,40 @@ if [[ -f "${ROOT}/assets/favicon.svg" ]]; then
 fi
 grep -qiE 'favicon|graphBorderColor' "$DESIGN" || \
   fail "DESIGN.md must document favicon and graphBorderColor / graphBackgroundColor"
+
+# Light-background header logo (AC3)
+[[ -f "$LOGO_HEADER" ]] || fail "assets/logo-header.png missing (cropped light-bg header mark)"
+# Reject tiny / empty / huge empty-canvas proxies: must be a real PNG with content
+file "$LOGO_HEADER" | grep -qi 'PNG' || fail "assets/logo-header.png must be a PNG"
+# Prefer cropped (not identical oversized empty square) — require dimensions via sips/file and size > 200 bytes
+logo_bytes="$(wc -c < "$LOGO_HEADER" | tr -d ' ')"
+[[ "$logo_bytes" -gt 200 ]] || fail "assets/logo-header.png looks empty (${logo_bytes} bytes)"
+if ! grep -qE 'logoUrl:[[:space:]]*https://status\.devora\.no/logo-header\.png' "$CONFIG"; then
+  fail "status-website.logoUrl must be https://status.devora.no/logo-header.png"
+fi
+
+# Light + dark themes (AC5)
+if ! grep -qE 'prefers-color-scheme:[[:space:]]*dark|\[data-theme=["'\'']dark["'\'']\]' "$THEME_CSS"; then
+  fail "theme CSS must define dark palette via @media (prefers-color-scheme: dark) and/or [data-theme=dark]"
+fi
+if ! grep -qiE 'color-scheme' "$CONFIG"; then
+  fail "status-website.metaTags must include color-scheme (light dark)"
+fi
+if ! grep -qiE 'color-scheme:[[:space:]]*.*light.*dark|content:[[:space:]]*["'\'']?light dark' "$CONFIG"; then
+  # Accept metaTags list form: name: color-scheme / content: light dark
+  if ! python3 - "$CONFIG" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+# Look for color-scheme near light dark
+if re.search(r"color-scheme[\s\S]{0,80}light\s+dark", text, re.I):
+    sys.exit(0)
+if re.search(r"content:\s*[\"']?light dark", text, re.I) and re.search(r"color-scheme", text, re.I):
+    sys.exit(0)
+sys.exit(1)
+PY
+  then
+    fail "metaTags color-scheme must be light dark"
+  fi
+fi
 
 pass

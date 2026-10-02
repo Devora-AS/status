@@ -1,47 +1,43 @@
 # Build Result
 
 ## Task
-status-nb-brand-nav — remove GitHub navbar, NB i18n, DESIGN.md + verified Upptime theme
+Digdir UX + light header logo + live graph brand filter + light/dark theme for Devora Upptime status page
 
 ## Status
 PASS
 
 ## Changes Made
-- `scripts/validate-status-website-ux.sh`: new TDD gate (GitHub navbar absent, DESIGN.md, NB `i18n`, theme asset/`themeUrl`/`theme-color`, AgePass+Vipps only)
-- `DESIGN.md`: root design.md front matter + prose; AgePass/Devora tokens mapped to Upptime CSS vars
-- `.upptimerc.yml`: removed GitHub navbar item; full NB `i18n` (`locale: nb-NO`); `allSitesOperational`/`notAllSitesOperational`; `themeUrl` + inline `css` `:root` vars; `metaTags` `theme-color`; intro without GitHub promo link
-- `assets/devora-status-theme.css`: light-theme CSS variables from DESIGN.md
-- `docs/current-plan.md`: step/AC markers `[]`→`[x]`
+- `scripts/validate-status-website-ux.sh`: Extended TDD gate for Digdir operational copy, legend/`customBodyHtml`, `logo-header.png` + `logoUrl`, `article.graph`/`--graph-filter`, dark `@media`/`data-theme`, `color-scheme` meta, and DESIGN.md documentation checks.
+- `assets/logo-header.png`: New cropped light-bg Devora mark (87×81 from `Logo_symbol_-_Lyse_bakgrunner-source.png`, 4px pad).
+- `assets/Logo_symbol_-_Lyse_bakgrunner-source.png`: Retained uncropped light-bg source asset.
+- `.upptimerc.yml`: Digdir-style `allSitesOperational` / `notAllSitesOperational` / `i18n.allSystemsOperational`; `logoUrl` → `logo-header.png`; `customBodyHtml` status legend; `metaTags` `color-scheme: light dark`; dark-aware `css` mirror; optional theme-toggle `js`.
+- `assets/devora-status-theme.css`: Light + dark palettes; Digdir legend styles; `--graph-filter` + explicit `article.graph` rule; canvas filter safety rail; theme-toggle button styles.
+- `DESIGN.md`: Documented Digdir legend mapping, logo-header vs dark favicon, PNG sparkline filter vs Chart.js keys, light/dark architecture, deferred UX notes.
+- `docs/current-plan.md`: In-plan markers `[]`→`[x]` for AC1–AC8 and steps 1–7; builder amendment appended.
 
 ## Acceptance Criteria
-- AC1: PASS — navbar is Status + devora.no only; no `github.com` href in `status-website.navbar`
-- AC2: PASS — root `DESIGN.md` with YAML front matter; maps primary/navy/page bg to `--nav-current-border-bottom-color` / `--body-*`; `npx @google/design.md lint DESIGN.md` → 0 errors (warnings only)
-- AC3: PASS — top-level `i18n:` complete from status-page `i18n.yml`, `locale: nb-NO`, æ/ø/å present; `$UPTIME`/`$TIME`/`$REPO`/`$NUMBER` preserved; sites/paths unchanged
-- AC4: PASS — `themeUrl: https://status.devora.no/devora-status-theme.css` + `assets/devora-status-theme.css` + duplicate `css` `:root` + `theme-color: #3432A6` (documented Upptime hooks only)
-- AC5: PASS — RED then GREEN on `validate-status-website-ux.sh`; `validate-upptime-config.sh` PASS; sites AgePass + Vipps only
-- AC6: PASS — playwright-cli vs live `https://status.devora.no` recorded (GitHub nav + English + teal `#1abc9c` still live); local config proof GREEN; **no commit/push**
-- AC7: PASS — no custom SCSS fork / gh-pages edits; no UtilitySign/DRILL
+- AC1: PASS — `allSitesOperational` and `i18n.allSystemsOperational` = «Alle våre systemer fungerer normalt»; `notAllSitesOperational` = «Ikke alle systemer fungerer normalt».
+- AC2: PASS — Five Digdir-inspired legend rows via `customBodyHtml` (`.devora-status-legend` / `.status-legend`); styled in theme CSS for light and dark tokens.
+- AC3: PASS — `logoUrl: https://status.devora.no/logo-header.png`; favicon remains dark-bg `favicon.png`/`favicon.svg` (documented in DESIGN.md).
+- AC4: PASS — `--graph-filter: hue-rotate(72deg) …` applied by `article.graph`; root `graphBorderColor`/`graphBackgroundColor` remain `#3432A6` / `#968AB6`.
+- AC5: PASS — Dark palette via `@media (prefers-color-scheme: dark)` and `[data-theme="dark"]`; `color-scheme: light dark` meta; optional `js` toggle present.
+- AC6: PASS — DESIGN.md covers logo assets, graph PNG vs Chart.js, Digdir mapping, light/dark, deferred ideas.
+- AC7: PASS — `bash scripts/validate-status-website-ux.sh` exits 0.
+- AC8: PASS — Sites AgePass + Vipps only; navbar has no GitHub; no UtilitySign; builder did not commit or push.
 
 ## Linting / Type-Check
 PASS
-```text
-validate-status-website-ux: PASS
-validate-upptime-config: PASS
-bash -n scripts/validate-status-website-ux.sh: PASS
-npx @google/design.md lint DESIGN.md: 0 errors (orphaned-token warnings OK)
-playwright-cli open https://status.devora.no/: OK (baseline lag documented)
-```
+`bash scripts/validate-status-website-ux.sh` → `validate-status-website-ux: PASS`  
+`python3 -c "import yaml; yaml.safe_load(open('.upptimerc.yml'))"` → `yaml ok`
 
 ## Issues / Blockers
-None for local/config scope. Live site will lag until operator push + Upptime static-site workflow publishes `assets/` and regenerates the status page.
+None
 
 ## Notes for Verifier
-- TDD: first RED was GitHub navbar present (`validate-status-website-ux` FAIL); fixed awk edge so `--css-var` greps use `grep --` on macOS
-- Live baseline (2026-10-01): nav still has GitHub → `https://github.com/Devora-AS/status`; UI English (`Live Status`, `All systems are operational`); `--nav-current-border-bottom-color` = `#1abc9c`
-- Local ready: navbar titles `['Status', 'devora.no']`; theme file + `themeUrl` + NB i18n in tree
-- Context7 `/upptime/upptime` + upptime.js.org confirmed `themeUrl`/`assets/*.css`, `i18n`, navbar, `css`, `metaTags`
-- Snapshots under `.playwright-cli/` are local evidence only (not for commit)
-- Parent owns build→validate transition / `[mao:build]` completed
+- Residual visual risk: `--graph-filter` hue may need live tweak after Static Site CI publish — confirm LiveStatus sparklines read as purple (not teal) and Vipps icon is not hue-shifted (filter scoped to `article.graph`).
+- `customBodyHtml` placement is Upptime-controlled (typically body injection); verify legend appears near intro/status on published site.
+- Optional SVG sibling for logo deferred; PNG is wired.
+- Untracked/noise: `.cursor/`, `.playwright-cli/` are unrelated to this slice.
 
-## Closeout (2026-10-01)
-Deploy-ready config for NB + brand + no GitHub nav; validators green; live lag documented; no commit/push.
+## Closeout (2026-10-02)
+Slice `status-digdir-ux-logo-graph-theme` implemented via documented Upptime hooks; local UX validator green; ready for parent→verifier and operator publish GO (no commit/push by builder).

@@ -46,16 +46,78 @@ status-website:
     Denne siden viser tilgjengelighet for AgePass og relaterte avhengigheter.
     Data kommer fra automatiske sjekker. Vipps-raden viser **tredjeparts** status —
     rød Vipps betyr ikke automatisk at AgePass er nede.
-  allSitesOperational: Alle systemer er operative
-  notAllSitesOperational: En eller flere tjenester er utilgjengelige
+  allSitesOperational: Alle våre systemer fungerer normalt
+  notAllSitesOperational: Ikke alle systemer fungerer normalt
   # Favicons: assets/* are copied to site root by Static Site CI (served as-is).
+  # logoUrl = light-bg cropped header mark; favicon stays dark-bg tab icon.
   favicon: https://status.devora.no/favicon.png
   faviconSvg: https://status.devora.no/favicon.svg
-  logoUrl: https://status.devora.no/favicon.png
+  logoUrl: https://status.devora.no/logo-header.png
   themeUrl: https://status.devora.no/devora-status-theme.css
   metaTags:
     - name: theme-color
       content: "#3432A6"
+    - name: color-scheme
+      content: light dark
+  # Digdir-inspired status legend (Upptime has up/degraded/down + maintenance only).
+  customBodyHtml: |
+    <aside class="devora-status-legend status-legend" aria-label="Forklaring av driftsstatus">
+      <p class="devora-status-legend__title">Forklaring av driftsstatus</p>
+      <ul class="devora-status-legend__list">
+        <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--up" aria-hidden="true"></span>Normal drift</li>
+        <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--degraded" aria-hidden="true"></span>Redusert funksjonalitet</li>
+        <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--partial" aria-hidden="true"></span>Delvis utilgjengelig</li>
+        <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--down" aria-hidden="true"></span>Utilgjengelig</li>
+        <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--maintenance" aria-hidden="true"></span>Vedlikehold</li>
+      </ul>
+      <p class="devora-status-legend__note">Upptime viser oppe / degradert / nede (+ planlagt vedlikehold). «Delvis utilgjengelig» er Digdir-inspirert forklaring og tilsvarer nærmest degradert / delvis påvirkning — ikke en egen live-tilstand.</p>
+    </aside>
+  # Optional light/dark toggle (prefers-color-scheme remains primary).
+  js: |
+    (function () {
+      try {
+        var root = document.documentElement;
+        var key = "devora-status-theme";
+        var stored = localStorage.getItem(key);
+        if (stored === "light" || stored === "dark") {
+          root.setAttribute("data-theme", stored);
+        }
+        function label() {
+          var cur = root.getAttribute("data-theme");
+          if (cur === "dark") return "Lys modus";
+          if (cur === "light") return "Mørk modus";
+          return "Tema";
+        }
+        function ensureBtn() {
+          var btn = document.getElementById("devora-theme-toggle");
+          if (btn) return btn;
+          btn = document.createElement("button");
+          btn.id = "devora-theme-toggle";
+          btn.type = "button";
+          btn.className = "devora-theme-toggle";
+          btn.setAttribute("aria-label", "Bytt mellom lys og mørk modus");
+          btn.addEventListener("click", function () {
+            var cur = root.getAttribute("data-theme");
+            var next;
+            if (cur === "dark") next = "light";
+            else if (cur === "light") next = "dark";
+            else next = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark";
+            root.setAttribute("data-theme", next);
+            localStorage.setItem(key, next);
+            btn.textContent = label();
+          });
+          document.body.appendChild(btn);
+          return btn;
+        }
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function () {
+            ensureBtn().textContent = label();
+          });
+        } else {
+          ensureBtn().textContent = label();
+        }
+      } catch (e) { /* ignore */ }
+    })();
   css: |
     :root {
       --body-background-color: #F8F7FF;
@@ -80,6 +142,30 @@ status-website:
       --submit-button-border-color: #242A56;
       --submit-button-background-color: #3432A6;
       --submit-button-color: #FFFFFF;
+      --graph-opacity: 0.95;
+      --graph-filter: hue-rotate(72deg) saturate(0.95) brightness(0.92);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --body-background-color: #12182A;
+        --body-text-color: #E8E6F5;
+        --card-background-color: #1B2438;
+        --nav-background-color: #1B2438;
+        --nav-border-bottom-color: #2F3A5C;
+        --nav-current-border-bottom-color: #968AB6;
+        --card-border-color: #2F3A5C;
+        --down-background-color: #3F1D1D;
+      }
+    }
+    :root[data-theme="dark"] {
+      --body-background-color: #12182A;
+      --body-text-color: #E8E6F5;
+      --card-background-color: #1B2438;
+      --nav-background-color: #1B2438;
+      --nav-border-bottom-color: #2F3A5C;
+      --nav-current-border-bottom-color: #968AB6;
+      --card-border-color: #2F3A5C;
+      --down-background-color: #3F1D1D;
     }
   navbar:
     - title: Status
@@ -90,7 +176,7 @@ status-website:
 # Norsk Bokmål UI-strenger (upptime/status-page/i18n.yml). Behold $PLACEHOLDERS.
 i18n:
   activeIncidents: Aktive hendelser
-  allSystemsOperational: Alle systemer er operative
+  allSystemsOperational: Alle våre systemer fungerer normalt
   incidentReport: "Hendelse #$NUMBER — rapport →"
   activeIncidentSummary: Åpnet $DATE med $POSTS innlegg
   incidentTitle: Hendelse $NUMBER — detaljer
