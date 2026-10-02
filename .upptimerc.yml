@@ -25,7 +25,7 @@ secrets:
   - NOTIFICATION_SLACK_WEBHOOK_URL
 
 sites:
-  - name: AgePass
+  - name: AgePass (produksjon)
     url: https://agepass.devora.no/health
     expectedStatusCodes:
       - 200
