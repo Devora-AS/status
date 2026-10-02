@@ -1,40 +1,23 @@
 # Session Summary
 
 ## Outcome
-**PASS** — `/mat-plan-team` slice `status-visual-legend-logo-livestatus-bg` completed via `builder_plus_verifier`. Stop reason: slice complete (single-cycle; not a long-run mission).
+**PASS** — Visual UX slice + intro copy + Vipps Logg Inn icon; docs/cleanup closeout; commit/push pending operator CI watch.
 
-## Preflight
-`execution_mode: builder_plus_verifier` — one plan → build → verify cycle.
-
-## Plan
-Three visual adjustments for `status.devora.no`: legend below `article.up`, theme-dependent header logo, Live status card surfaces matching `article.up` / past incidents. Default dark token `#1B2438`.
-
-## Built
-- Legend relocate JS after `main article.up|down|degraded`
-- Dark nav logo → `favicon.png`; light keeps `logo-header.png`
-- Live status / down soft fills aligned to `#FFFFFF` / `#1B2438` (removed `#FEE2E2` / `#3F1D1D`)
-- TDD extensions to `scripts/validate-status-website-ux.sh` → PASS
-- `DESIGN.md` updated
+## Delivered this session
+1. Legend relocated under operational banner (`article.up` / down / degraded)
+2. Theme-dependent header logo (light `logo-header.png` / dark `favicon.png`)
+3. Live status card surfaces = `#FFFFFF` / `#1B2438` (banned `#3F1D1D`, `#FEE2E2`)
+4. Intro → `**Devora** — driftsstatus` + company-wide `introMessage`
+5. Monitor titles: **AgePass**, **Vipps Logg Inn**; Vipps icon `assets/vipps-logg-inn.png`
+6. Docs: `DESIGN.md` brand ban on `#3F1D1D`; `docs/monitors.md` + `README.md` aligned
 
 ## Verification
-`verify-result.md` Status **PASS** for AC1–AC6. Live site lags until Static Site CI (non-blocking).
+- `scripts/validate-status-website-ux.sh` PASS
+- `scripts/validate-upptime-config.sh` PASS
+- Live publish depends on Static Site CI after push
 
-## Files changed
-- `.upptimerc.yml`
-- `assets/devora-status-theme.css`
-- `scripts/validate-status-website-ux.sh`
-- `DESIGN.md`
-- `docs/current-plan.md`
-- `build-result.md`
-- `verify-result.md`
-
-## Open issues
-- Live `status.devora.no` not yet published with this slice
-- Dark surface token: used `#1B2438` (not `#1b2432`) — confirm visually after publish if operator wants exact `#1b2432`
-
-## Gates
-- Hook Gate: N/A (minimal MAT tooling in this repo)
-- Agent Gate: PASS (builder + verifier Task dispatch completed)
+## Brand note
+`#3F1D1D` is **not** part of Devora’s graphical profile and must never be used on the status page.
 
 ## Commit / push
-Not performed (operator did not ask).
+Operator requested commit + push + CI monitor in closeout turn.

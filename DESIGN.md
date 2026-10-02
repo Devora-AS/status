@@ -26,7 +26,6 @@ colors:
   info: "#3B82F6"
   nav-border: "#E8E6F5"
   nav-border-dark: "#2F3A5C"
-  down-soft: "#FEE2E2"
 typography:
   body-md:
     fontFamily: system-ui
@@ -139,7 +138,7 @@ Custom theme file: `assets/devora-status-theme.css`, published as `https://statu
 | `--up-border-left-color` / `--tag-up-background-color` | `success` `#22C55E` |
 | `--degraded-border-left-color` / `--tag-degraded-background-color` / `--change-background-color` | `warning` `#F59E0B` |
 | `--down-border-left-color` / `--tag-down-background-color` | `error` `#EF4444` |
-| `--down-background-color` | **card surface** `#FFFFFF` (dark: `#1B2438`) — soft-error fills `#FEE2E2` / `#3F1D1D` retired for Live status / card boxes; down state remains via border-left + tags |
+| `--down-background-color` | **card surface** `#FFFFFF` (dark: `#1B2438`) — never soft-error red fills; down state via border-left + tags only |
 | `--tag-color` | `on-primary` `#FFFFFF` |
 | `--error-button-*` / `--submit-button-*` | `primary` / `navy` |
 
@@ -223,7 +222,18 @@ Live status monitor boxes (`section.live-status article`) use the same surface a
 | Light | `#FFFFFF` | `--card-background-color` / `surface` |
 | Dark | `#1B2438` | `--card-background-color` / `surface-dark` / `navy-dark` |
 
-**Token decision:** Operator shorthand `#1b243` / `#1b2432` is **not** used. Dark Live status uses existing DESIGN token `#1B2438` (matches live computed `rgb(27, 36, 56)` for `article.up`). Soft-error fills `#FEE2E2` (light) and `#3F1D1D` (dark) must **not** paint Live status boxes; `--down-background-color` is remapped to the card surface, with down indicated by `--down-border-left-color` / tags only.
+**Token decision:** Operator shorthand `#1b243` / `#1b2432` is **not** used. Dark Live status uses existing DESIGN token `#1B2438` (matches live computed `rgb(27, 36, 56)` for `article.up`). `--down-background-color` is remapped to the card surface, with down indicated by `--down-border-left-color` / tags only.
+
+### Banned fills (not Devora brand)
+
+These hex values must **never** appear in status-page CSS, theme tokens, or Live status / card surfaces — they are **not** part of Devora’s graphical profile:
+
+| Hex | Why banned |
+|-----|------------|
+| `#3F1D1D` | Non-brand dark soft-error fill (never use) |
+| `#FEE2E2` / `#fee2e2` | Non-brand light soft-error fill (never use for status boxes) |
+
+Use `surface` / `surface-dark` (`#FFFFFF` / `#1B2438`) for box backgrounds; communicate down via `error` border/tag tokens only.
 
 Theme CSS:
 

@@ -26,3 +26,9 @@ Thumbs.db
 # Logs og MAT-artefakter (ikke nødvendig i status-repo, men trygt)
 logs/
 artifacts/
+
+# Lokal agent / Playwright CLI / cleanup
+.cursor/
+.playwright-cli/
+.cleanup_quarantine/
+.cursor/cache/

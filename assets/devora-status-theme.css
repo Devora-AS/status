@@ -115,7 +115,7 @@ article.graph {
 
 /*
  * Live status monitor cards — same surface as article.up / past-incident cards.
- * Do not paint Live status with soft-error fills (#FEE2E2 / #3F1D1D).
+ * Do not paint Live status with banned soft-error fills (#FEE2E2 / #3F1D1D — not Devora brand).
  * Dark card token is DESIGN #1B2438 (not operator shorthand #1b2432).
  */
 section.live-status article {

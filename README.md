@@ -10,8 +10,8 @@ Konfigurasjon i [`.upptimerc.yml`](./.upptimerc.yml). Detaljert URL-liste: [`doc
 
 | Komponent                  | Status                                                               |
 | -------------------------- | -------------------------------------------------------------------- |
-| AgePass prod `/health`     | Aktiv                                                                |
-| Vipps Login `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn)                                   |
+| AgePass `/health`           | Aktiv                                                                |
+| Vipps Logg Inn `summary.json` | Aktiv (HTTP 200 ≠ komponent-grønn); ikon `vipps-logg-inn.png`      |
 | UtilitySign                | **Deferred** — ikke i `.upptimerc.yml` (DNS/reachability NOT PROVEN) |
 
 ## Drift

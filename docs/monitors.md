@@ -8,7 +8,7 @@ Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen 
 
 | Felt | Verdi |
 |------|--------|
-| **Komponent** | AgePass (produksjon) |
+| **Komponent** | AgePass |
 | **URL** | `GET https://agepass.devora.no/health` |
 | **Forventet HTTP** | `200` |
 | **Body (MVP)** | JSON med `status: healthy` når OK — **ikke** validert av Upptime i MVP; kun statuskode |
@@ -18,7 +18,8 @@ Kilde for sannhet i Upptime: [`.upptimerc.yml`](../.upptimerc.yml). Denne filen 
 
 | Felt | Verdi |
 |------|--------|
-| **Komponent** | Vipps Login (upstream — ikke AgePass) |
+| **Komponent** | Vipps Logg Inn |
+| **Ikon** | `https://status.devora.no/vipps-logg-inn.png` (`assets/vipps-logg-inn.png`) |
 | **URL** | `GET https://status.vippsmobilepay.com/api/v2/summary.json` |
 | **Forventet HTTP** | `200` |
 | **Tolkning** | JSON kan vise degradert komponent selv ved HTTP 200. **Rød Vipps-rad betyr ikke at AgePass er nede.** Bruk n8n/runbook for beriket Slack om innvirkning på innlogging. |
