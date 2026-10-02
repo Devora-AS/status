@@ -64,7 +64,7 @@ status-website:
       content: "#3432A6"
     - name: color-scheme
       content: light dark
-  # Digdir-inspired status legend (Upptime has up/degraded/down + maintenance only).
+  # Status legend (five visitor-facing labels; live states are up/degraded/down + maintenance).
   customBodyHtml: |
     <aside class="devora-status-legend status-legend" aria-label="Forklaring av driftsstatus">
       <p class="devora-status-legend__title">Forklaring av driftsstatus</p>
@@ -75,7 +75,7 @@ status-website:
         <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--down" aria-hidden="true"></span>Utilgjengelig</li>
         <li class="devora-status-legend__item"><span class="devora-status-legend__swatch devora-status-legend__swatch--maintenance" aria-hidden="true"></span>Vedlikehold</li>
       </ul>
-      <p class="devora-status-legend__note">Upptime viser oppe / degradert / nede (+ planlagt vedlikehold). «Delvis utilgjengelig» er Digdir-inspirert forklaring og tilsvarer nærmest degradert / delvis påvirkning — ikke en egen live-tilstand.</p>
+      <p class="devora-status-legend__note">Devora driftsstatus viser oppe / degradert / nede (+ planlagt vedlikehold). «Delvis utilgjengelig» tilsvarer nærmest degradert / delvis påvirkning — ikke en egen live-tilstand.</p>
     </aside>
   # Theme toggle + legend relocate below article.up + theme-dependent nav logo.
   js: |

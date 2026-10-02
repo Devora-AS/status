@@ -105,7 +105,9 @@ Visitor-facing operational copy mirrors Digdir’s status.digdir.no tone (Norweg
 
 **Status legend** is injected via documented `status-website.customBodyHtml` (classes `.devora-status-legend` / `.status-legend`) and styled in `assets/devora-status-theme.css`. Upptime only has **up / degraded / down** + scheduled maintenance — the five Digdir-inspired rows are labels for visitors, not five live Upptime states.
 
-**Placement:** `customBodyHtml` injects the aside early in `#sapper` (above nav). `status-website.js` relocates it **after Sapper hydrates** the operational banner (`main.container > article.up|down|degraded`, never `section.live-status article`) via `MutationObserver` (`childList`/`subtree`) + interval retry — a single `DOMContentLoaded` call is too early because `article.up` is client-rendered. Target order: banner → legend → «Live status». Norwegian copy is unchanged.
+**Placement:** `customBodyHtml` injects the aside early in `#sapper` (above nav). `status-website.js` relocates it **after Sapper hydrates** the operational banner (`main.container > article.up|down|degraded`, never `section.live-status article`) via `MutationObserver` (`childList`/`subtree`) + interval retry — a single `DOMContentLoaded` call is too early because `article.up` is client-rendered. Target order: banner → **12px gap** (`article.up + .devora-status-legend { margin-top }`) → legend → «Live status».
+
+**Public copy:** Visitor-facing HTML must say **Devora driftsstatus** (not third-party product names). Do not mention Digdir or other external status products in legend or body copy. **Upptime** is named only in `i18n.footer` (`drevet av Upptime`).
 
 | Digdir-inspired label | Upptime meaning | Token |
 |-----------------------|-----------------|-------|

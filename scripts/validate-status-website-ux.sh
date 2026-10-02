@@ -163,6 +163,15 @@ fi
 if ! grep -qE '\.status-legend|\.devora-status-legend' "$THEME_CSS"; then
   fail "theme CSS must style .status-legend or .devora-status-legend"
 fi
+if ! grep -qE 'article\.(up|down|degraded) \+ \.devora-status-legend' "$THEME_CSS"; then
+  fail "theme CSS must add margin between operational banner and legend (article.up + .devora-status-legend)"
+fi
+if grep -qE 'devora-status-legend__note.*Upptime|devora-status-legend__note.*Digdir' "$CONFIG"; then
+  fail "legend note must not mention Upptime or Digdir (only i18n.footer may reference Upptime)"
+fi
+if ! grep -qF 'Devora driftsstatus viser oppe / degradert / nede' "$CONFIG"; then
+  fail "legend note must use Devora driftsstatus branding"
+fi
 
 # --- AC4: theme asset + themeUrl and/or css + metaTags theme-color ---
 [[ -f "$THEME_CSS" ]] || fail "assets/devora-status-theme.css missing"
